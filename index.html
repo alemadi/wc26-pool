@@ -602,8 +602,17 @@ async function setJSON(k,v,sh){return await sset(k,JSON.stringify(v),sh);}
 /* Bulk fetch: all records under a prefix in ONE query (leaderboard at scale) */
 async function sbulkJSON(pre){
   if(!CONFIGURED)return [];
-  try{const r=await fetch(SUPABASE_URL+"/rest/v1/kv?key=like."+encodeURIComponent(pre)+"*&select=key,value",{headers:SBH});
-    const j=await r.json();return Array.isArray(j)?j.map(x=>{try{return JSON.parse(x.value);}catch(e){return null;}}).filter(Boolean):[];}catch(e){return [];}
+  const out=[];const PAGE=1000;
+  try{
+    for(let off=0;off<20000;off+=PAGE){
+      const r=await fetch(SUPABASE_URL+"/rest/v1/kv?key=like."+encodeURIComponent(pre)+"*&select=key,value&order=key.asc",{headers:Object.assign({Range:off+"-"+(off+PAGE-1)},SBH)});
+      const j=await r.json();
+      if(!Array.isArray(j))break;
+      j.forEach(x=>{try{out.push(JSON.parse(x.value));}catch(e){}});
+      if(j.length<PAGE)break;
+    }
+    return out;
+  }catch(e){return out;}
 }
 /* Server clock: kickoff locks use database time, not the phone's (anti-cheat) */
 let CLOCK_OFFSET=0;
