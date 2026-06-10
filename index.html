@@ -124,6 +124,9 @@
   .team{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;min-width:0}
   .team.right{order:3}
   .flag{font-size:34px;line-height:1;filter:drop-shadow(0 3px 6px rgba(0,0,0,.35))}
+  .fl-img{width:20px;height:auto;border-radius:3px;vertical-align:-3px;display:inline-block;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+  .flag .fl-img{width:42px;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,.45)}
+  .mini .fl-img{width:24px;border-radius:4px;vertical-align:-5px}
   .flag-tbd{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-d);font-size:16px;color:var(--faint);border:1.5px dashed var(--line);background:rgba(0,0,0,.15)}
   .tname{font-weight:800;font-size:13.5px;letter-spacing:.2px;max-width:130px}
   .tname.slot{font-weight:700;font-size:11px;color:var(--muted);line-height:1.25}
@@ -390,15 +393,16 @@
 const PASS = "DOHA2026"; // organizer access code — share with admins only
 
 const FL = {
- "Mexico":"🇲🇽","South Africa":"🇿🇦","South Korea":"🇰🇷","Czechia":"🇨🇿","Canada":"🇨🇦","Bosnia & H.":"🇧🇦",
- "USA":"🇺🇸","Paraguay":"🇵🇾","Qatar":"🇶🇦","Switzerland":"🇨🇭","Brazil":"🇧🇷","Morocco":"🇲🇦","Haiti":"🇭🇹",
- "Scotland":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Australia":"🇦🇺","Türkiye":"🇹🇷","Germany":"🇩🇪","Curaçao":"🇨🇼","Netherlands":"🇳🇱","Japan":"🇯🇵",
- "Ivory Coast":"🇨🇮","Ecuador":"🇪🇨","Sweden":"🇸🇪","Tunisia":"🇹🇳","Spain":"🇪🇸","Cape Verde":"🇨🇻","Belgium":"🇧🇪",
- "Egypt":"🇪🇬","Saudi Arabia":"🇸🇦","Uruguay":"🇺🇾","Iran":"🇮🇷","New Zealand":"🇳🇿","France":"🇫🇷","Senegal":"🇸🇳",
- "Iraq":"🇮🇶","Norway":"🇳🇴","Argentina":"🇦🇷","Algeria":"🇩🇿","Austria":"🇦🇹","Jordan":"🇯🇴","Portugal":"🇵🇹",
- "DR Congo":"🇨🇩","England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Croatia":"🇭🇷","Ghana":"🇬🇭","Panama":"🇵🇦","Uzbekistan":"🇺🇿","Colombia":"🇨🇴"
+ "Mexico":"mx","South Africa":"za","South Korea":"kr","Czechia":"cz","Canada":"ca","Bosnia & H.":"ba",
+ "USA":"us","Paraguay":"py","Qatar":"qa","Switzerland":"ch","Brazil":"br","Morocco":"ma","Haiti":"ht",
+ "Scotland":"gb-sct","Australia":"au","Türkiye":"tr","Germany":"de","Curaçao":"cw","Netherlands":"nl","Japan":"jp",
+ "Ivory Coast":"ci","Ecuador":"ec","Sweden":"se","Tunisia":"tn","Spain":"es","Cape Verde":"cv","Belgium":"be",
+ "Egypt":"eg","Saudi Arabia":"sa","Uruguay":"uy","Iran":"ir","New Zealand":"nz","France":"fr","Senegal":"sn",
+ "Iraq":"iq","Norway":"no","Argentina":"ar","Algeria":"dz","Austria":"at","Jordan":"jo","Portugal":"pt",
+ "DR Congo":"cd","England":"gb-eng","Croatia":"hr","Ghana":"gh","Panama":"pa","Uzbekistan":"uz","Colombia":"co"
 };
-function T(n){return {n:n, f:FL[n]||""};}
+function flagTag(c){return '<img class="fl-img" src="https://flagcdn.com/w40/'+c+'.png" srcset="https://flagcdn.com/w80/'+c+'.png 2x" alt="" loading="lazy">';}
+function T(n){const c=FL[n];return {n:n, f:c?flagTag(c):""};}
 
 /* [id, round, home, away, kickoffUTC, venue, tag, isKnockout] */
 const RAW=[
@@ -677,7 +681,7 @@ function defaultRound(){
 }
 function renderFilters(){
   const host=document.getElementById("filters");
-  const specials=[["qatar","🇶🇦 Qatar"],["arab","Arab nations"],["today","Today"]];
+  const specials=[["qatar",flagTag("qa")+" Qatar"],["arab","Arab nations"],["today","Today"]];
   let html="";
   specials.forEach(([k,l])=>html+='<button class="chip '+(state.filter===k?"on":"")+'" onclick="setFilter(\''+k+'\')">'+l+'</button>');
   html+='<span class="chip sep">|</span>';
