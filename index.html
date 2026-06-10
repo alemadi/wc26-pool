@@ -102,6 +102,8 @@
   .champ .t small{margin-left:auto;font-size:10px;color:var(--muted);font-weight:700;text-align:right}
   .champ select{width:100%;margin-top:10px}
   .champ .done{margin-top:9px;font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .lockin{margin-top:9px;font-size:10.5px;font-weight:800;color:var(--gold);letter-spacing:.3px;text-align:center;opacity:.85}
+  .lockin.soon{color:var(--bad);opacity:1}
 
   .filters{display:flex;gap:8px;overflow-x:auto;padding:13px 2px 4px;scrollbar-width:none}
   .filters::-webkit-scrollbar{display:none}
@@ -623,7 +625,26 @@ function fmtTime(iso){return fT.format(new Date(iso)).toUpperCase();}
 function fmtWk(iso){return fWk.format(new Date(iso));}
 function dayKey(iso){return fDayKey.format(new Date(iso));}
 function locked(iso){return new Date(iso).getTime()<=Date.now()+CLOCK_OFFSET;}
-function lockedM(m){const off=(m.round==="MD1")?0:LOCK_HRS*3600*1000;return new Date(m.ko).getTime()-off<=Date.now()+CLOCK_OFFSET;}
+function lockTs(m){const off=(m.round==="MD1")?0:LOCK_HRS*3600*1000;return new Date(m.ko).getTime()-off;}
+function lockedM(m){return lockTs(m)<=Date.now()+CLOCK_OFFSET;}
+function fmtLeft(ms){
+  if(ms<=0)return "locking…";
+  const mins=Math.floor(ms/60000),d=Math.floor(mins/1440),h=Math.floor((mins%1440)/60),mm=mins%60;
+  if(d>0)return "locks in "+d+"d "+h+"h";
+  if(h>0)return "locks in "+h+"h "+(mm<10?"0":"")+mm+"m";
+  if(mins>=1)return "locks in "+mm+"m";
+  return "locks in <1m";
+}
+setInterval(function(){
+  let flip=false;
+  document.querySelectorAll(".lockin[data-lockts]").forEach(function(el){
+    const left=Number(el.dataset.lockts)-(Date.now()+CLOCK_OFFSET);
+    if(left<=0){flip=true;return;}
+    el.textContent="⏳ "+fmtLeft(left);
+    el.classList.toggle("soon",left<7200000);
+  });
+  if(flip&&state.player)renderMatches();
+},30000);
 function champLocked(){return new Date(CHAMP_LOCK).getTime()<=Date.now()+CLOCK_OFFSET;}
 
 let state={view:"matches",meSlug:null,player:null,results:{},org:false,demo:false,filter:"MD1"};
@@ -752,7 +773,8 @@ function renderChampCard(){
   }else{
     inner+='<select class="input" id="champ-sel"><option value="">Choose your champion…</option>'+teams.map(t=>'<option value="'+esc(t)+'"'+(t===mine?' selected':'')+'>'+esc(t)+'</option>').join("")+'</select>'+
     '<div style="margin-top:9px;font-size:11px;color:var(--muted);font-weight:700">Prize tiebreaker · total goals in the whole tournament</div>'+
-    '<input class="input" id="goals-in" type="number" inputmode="numeric" min="0" max="600" placeholder="e.g. 170" value="'+(state.player.goals!=null?state.player.goals:"")+'" style="margin-top:6px">';
+    '<input class="input" id="goals-in" type="number" inputmode="numeric" min="0" max="600" placeholder="e.g. 170" value="'+(state.player.goals!=null?state.player.goals:"")+'" style="margin-top:6px">'+
+    '<div class="lockin" data-lockts="'+Date.parse(CHAMP_LOCK)+'">⏳ '+fmtLeft(Date.parse(CHAMP_LOCK)-Date.now()-CLOCK_OFFSET)+'</div>';
   }
   host.innerHTML='<div class="champ">'+inner+'</div>';
   const sel=document.getElementById("champ-sel");
@@ -806,7 +828,8 @@ function matchCard(m,idx){
       '<div class="bonus"><button class="bonus-toggle" data-bt="'+m.id+'">＋ Exact score (bonus +2)</button>'+
       '<div class="bonus-fields '+((p.h!=null)?"show":"")+'" data-bf="'+m.id+'">'+
       '<label>'+m.home.f+'</label><input class="scorein" type="number" min="0" max="20" inputmode="numeric" data-sh="'+m.id+'" value="'+(p.h!=null?p.h:"")+'">'+
-      '<span class="scoredash">–</span><input class="scorein" type="number" min="0" max="20" inputmode="numeric" data-sa="'+m.id+'" value="'+(p.a!=null?p.a:"")+'"><label>'+m.away.f+'</label></div></div>';
+      '<span class="scoredash">–</span><input class="scorein" type="number" min="0" max="20" inputmode="numeric" data-sa="'+m.id+'" value="'+(p.a!=null?p.a:"")+'"><label>'+m.away.f+'</label></div></div>'+
+      '<div class="lockin'+((lockTs(m)-Date.now()-CLOCK_OFFSET)<7200000?' soon':'')+'" data-lockts="'+lockTs(m)+'">⏳ '+fmtLeft(lockTs(m)-Date.now()-CLOCK_OFFSET)+'</div>';
   }
   return '<div class="match-card '+(m.tag==="qatar"?"qatar":"")+'" style="animation-delay:'+Math.min(idx*0.03,0.4)+'s">'+ribbon+
     '<div class="teams"><div class="team"><div class="flag">'+m.home.f+'</div><div class="tname">'+esc(m.home.n)+'</div></div>'+mid+
