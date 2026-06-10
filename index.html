@@ -580,7 +580,12 @@ async function sget(k,sh){
 async function sset(k,v,sh){
   if(!sh){lsSet(k,v);return true;}
   if(!CONFIGURED)return false;
-  try{const r=await fetch(SUPABASE_URL+"/rest/v1/kv",{method:"POST",headers:Object.assign({Prefer:"resolution=merge-duplicates,return=minimal"},SBH),body:JSON.stringify({key:k,value:v,updated_at:new Date().toISOString()})});return r.ok;}catch(e){return false;}
+  const body=JSON.stringify({key:k,value:v,updated_at:new Date().toISOString()});
+  for(let t=0;t<4;t++){
+    try{const r=await fetch(SUPABASE_URL+"/rest/v1/kv",{method:"POST",headers:Object.assign({Prefer:"resolution=merge-duplicates,return=minimal"},SBH),body});if(r.ok)return true;}catch(e){}
+    if(t<3)await new Promise(res=>setTimeout(res,700*Math.pow(2.5,t)));
+  }
+  return false;
 }
 async function sdel(k,sh){
   if(!sh){lsDel(k);return;}
@@ -885,7 +890,7 @@ function saveScore(id,h,a){
   queueSave();
   if(P.h!=null&&P.a!=null)toast("Score saved · bonus armed ⚡");
 }
-async function persistPlayer(){const ok=await setJSON("wc:player:"+state.meSlug,state.player,true);if(!ok)toast("⚠️ Not saved — check connection and tap again");}
+async function persistPlayer(){const ok=await setJSON("wc:player:"+state.meSlug,state.player,true);if(!ok){toast("⚠️ Connection hiccup — retrying your save automatically…");setTimeout(queueSave,10000);}}
 
 async function renderLeaderboard(){
   const body=document.getElementById("lb-body");
