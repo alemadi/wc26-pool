@@ -138,6 +138,8 @@
   .dep-fc::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.7)}
   .dep-fb.gold .dep-fc{color:var(--gold-bright)}
   @keyframes flap{from{transform:rotateX(86deg);opacity:.15}to{transform:rotateX(0);opacity:1}}
+  .dep-fc.roll{animation:depspin .075s linear infinite}
+  @keyframes depspin{0%,100%{transform:rotateX(0)}50%{transform:rotateX(-16deg) translateY(.5px)}}
   .dep-sub{font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-top:6px}
   .dep-st{font-size:8.5px;letter-spacing:1.6px;text-transform:uppercase;font-weight:800;color:var(--faint);text-align:right;width:62px;flex-shrink:0;line-height:1.5}
   .dep-st.b{color:var(--gold-bright);animation:blink 1.7s steps(2) infinite}
@@ -867,7 +869,37 @@ function showView(view){
   if(view==="matches"){renderFilters();renderMatches();}
   if(view==="leaderboard")renderLeaderboard();
   if(view==="me"){renderMe();showOrg();}
+  if(view==="join")rollBoard();
   window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* Solari roll: cells step through their character set to the target, then settle.
+   Additive: with JS off or reduced motion, the board renders exactly as before. */
+var DEP_FINALS=null;
+function rollBoard(){
+  if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  var AZ="ABCDEFGHIJKLMNOPQRSTUVWXYZ",DG="0123456789";
+  var rows=document.querySelectorAll(".dep-fb");
+  if(!rows.length)return;
+  if(!DEP_FINALS){DEP_FINALS=[];rows.forEach(function(row){var f=[];row.querySelectorAll(".dep-fc").forEach(function(el){f.push(el.textContent);});DEP_FINALS.push(f);});}
+  rows.forEach(function(row,ri){
+    row.querySelectorAll(".dep-fc").forEach(function(el,ci){
+      var fin=DEP_FINALS[ri][ci];
+      var set=DG.indexOf(fin)>=0?DG:(AZ.indexOf(fin)>=0?AZ:null);
+      el.style.animation="none";
+      if(!set){el.textContent=fin;return;}
+      var steps=7+((ri*3+ci*5)%8);
+      var i=((set.indexOf(fin)-steps)%set.length+set.length)%set.length;
+      el.textContent=set[i];
+      setTimeout(function(){
+        el.classList.add("roll");
+        var t=setInterval(function(){
+          i=(i+1)%set.length;el.textContent=set[i];
+          if(set[i]===fin){clearInterval(t);el.classList.remove("roll");el.style.animation="flap .2s both";}
+        },48);
+      },ri*260+ci*70);
+    });
+  });
 }
 
 async function joinNow(){
