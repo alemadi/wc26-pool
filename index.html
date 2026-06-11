@@ -382,6 +382,8 @@
   .rival .rv-sub{font-size:11.5px;color:var(--muted);margin-top:4px;font-weight:600}
   .rival .rv-x{background:none;border:none;color:var(--faint);font:inherit;font-size:11px;font-weight:700;cursor:pointer;margin-top:6px;text-decoration:underline}
   .rv-pick{margin-top:8px;width:100%}
+  .live-tag{color:#ff7b84;display:flex;align-items:center;gap:5px;justify-content:center}
+  .live-tag .pulse{width:6px;height:6px}
   @media (prefers-reduced-motion:reduce){.pb-dot{animation:none}}
 
   footer.app{text-align:center;font-size:10.5px;color:var(--faint);padding:26px 10px 6px;line-height:1.7}
@@ -545,7 +547,7 @@
       </div>
       <div id="org-panel" style="display:none">
         <div class="switch-row"><div class="txt"><b>🎬 Demo mode</b><span>Populate the leaderboard with a sample field for a pitch. Presentation only — saves nothing.</span></div><div class="switch" id="demo-switch" onclick="toggleDemo()"></div></div>
-        <div class="org-note">Group rounds: enter final scores below — saving updates everyone's points instantly. Knockout rounds: set both teams for each tie (Round of 32 once the group stage ends), then record the winner after full time or penalties — the next round fills itself in automatically.</div>
+        <div class="org-note">Group rounds: enter final scores below — saving updates everyone's points instantly. Finished matches may arrive prefilled from the live feed; review and press Save to make them official. Knockout rounds: set both teams for each tie (Round of 32 once the group stage ends), then record the winner after full time or penalties — the next round fills itself in automatically.</div>
         <select class="input org-pick" id="org-round" onchange="renderResultsEditor()"></select>
         <div id="res-list"></div>
         <div style="display:flex;gap:9px;margin-top:18px"><button class="btn btn-ghost" onclick="exportBackup()">⬇ Export backup</button><button class="btn btn-ghost" onclick="document.getElementById('restore-file').click()">⬆ Restore</button></div>
@@ -1073,9 +1075,7 @@ function matchCard(m,idx){
   const p=state.player.predictions[m.id]||{};
   const res=state.results[m.id],lk=lockedM(m)||!!res;
   const ribbon=m.tag==="qatar"?'<div class="ribbon">⭐ Qatar</div>':(m.tag==="open"?'<div class="ribbon open">Opener</div>':'');
-  let mid;
-  if(res){mid='<div class="midcol"><div class="final-score">'+res.h+'–'+res.a+'</div><div class="final-tag">Full time</div></div>';}
-  else{mid='<div class="midcol"><div class="vs">VS</div><div class="kotime">'+fmtTime(m.ko)+'</div><div class="koday">'+fmtWk(m.ko)+'</div></div>';}
+  let mid='<div class="midcol" data-mc="'+m.id+'">'+midHTML(m,res)+'</div>';
   let picks="";
   if(lk){
     const lab=p.o?("Picked: "+(p.o==="H"?m.home.n:p.o==="A"?m.away.n:"Draw")):"No pick";
@@ -1320,9 +1320,11 @@ function renderResultsEditor(){
   let html="";
   list.forEach(m=>{
     const r=state.results[m.id];
+    const lf=(!r&&typeof liveFor==="function")?liveFor(m):null;
+    const ph=(lf&&lf.done&&lf.hs!=null)?lf.hs:"",pa=(lf&&lf.done&&lf.as!=null)?lf.as:"";
     html+='<div class="res-row"><div class="rt">'+m.home.f+' '+esc(m.home.n)+' <span style="color:var(--faint)">v</span> '+esc(m.away.n)+' '+m.away.f+'</div>'+
-      '<input class="si" type="number" min="0" max="20" inputmode="numeric" data-rh="'+m.id+'" value="'+(r?r.h:"")+'">'+
-      '<input class="si" type="number" min="0" max="20" inputmode="numeric" data-ra="'+m.id+'" value="'+(r?r.a:"")+'">'+
+      '<input class="si" type="number" min="0" max="20" inputmode="numeric" data-rh="'+m.id+'" value="'+(r?r.h:ph)+'">'+
+      '<input class="si" type="number" min="0" max="20" inputmode="numeric" data-ra="'+m.id+'" value="'+(r?r.a:pa)+'">'+
       '<span class="saved" data-rs="'+m.id+'">'+(r?"✓":"")+'</span></div>';
   });
   host.innerHTML=html;
@@ -1518,8 +1520,11 @@ function renderPulse(){
   const now=Date.now()+CLOCK_OFFSET;
   const live=FIXTURES.filter(m=>isLive(m));
   if(live.length){
-    const m=live[0];const min=Math.max(1,Math.min(120,Math.floor((now-new Date(m.ko).getTime())/60000)));
-    el.innerHTML='<span class="pb-dot"></span><b>LIVE</b>&nbsp;'+(m.home.f?m.home.f+' ':'')+esc(m.home.n)+' v '+esc(m.away.n)+(m.away.f?' '+m.away.f:'')+' \u00b7 '+min+'\u2032'+(live.length>1?'<span class="pb-more">+'+(live.length-1)+' more live</span>':'');
+    const m=live[0];const le=(typeof liveFor==="function")?liveFor(m):null;
+    const min=Math.max(1,Math.min(120,Math.floor((now-new Date(m.ko).getTime())/60000)));
+    const sc=(le&&le.hs!=null&&le.state!=="pre")?('<b>'+le.hs+'\u2013'+le.as+'</b>'):'v';
+    const ck=(le&&le.state==="in"&&le.clock)?le.clock:(min+'\u2032');
+    el.innerHTML='<span class="pb-dot"></span><b>LIVE</b>&nbsp;'+(m.home.f?m.home.f+' ':'')+esc(m.home.n)+' '+sc+' '+esc(m.away.n)+(m.away.f?' '+m.away.f:'')+' \u00b7 '+esc(ck)+(live.length>1?'<span class="pb-more">+'+(live.length-1)+' more live</span>':'');
     el.className="pulsebar live";el.style.display="flex";return;
   }
   const next=FIXTURES.filter(m=>new Date(m.ko).getTime()>now).sort((a,b)=>new Date(a.ko)-new Date(b.ko))[0];
@@ -1677,6 +1682,74 @@ function drawCardTrophy(x,cx,cy,s){
   x.restore();
 }
 
+/* ===== live scores — ESPN public World Cup feed; display-only; fails silent ===== */
+const LIVEF={on:true,fails:0,ev:[],ours:null};
+const TEAM_ALIAS={"unitedstates":"USA","turkey":"T\u00fcrkiye","czechrepublic":"Czechia","bosniaandherzegovina":"Bosnia & H.","bosniaherzegovina":"Bosnia & H.","cotedivoire":"Ivory Coast","capeverdeislands":"Cape Verde","caboverde":"Cape Verde","congodr":"DR Congo","democraticrepublicofthecongo":"DR Congo","iriran":"Iran","korearepublic":"South Korea"};
+function tnorm(x){return (x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");}
+function ourTeam(n){
+  if(!LIVEF.ours){LIVEF.ours={};Object.keys(FL).forEach(k=>LIVEF.ours[tnorm(k)]=k);}
+  const t=tnorm(n);return TEAM_ALIAS[t]||LIVEF.ours[t]||null;
+}
+async function fetchLive(){
+  if(!LIVEF.on)return;
+  try{
+    const f=d=>d.toISOString().slice(0,10).replace(/-/g,"");
+    const a=new Date(Date.now()-12*36e5),b=new Date(Date.now()+36*36e5);
+    const r=await fetch("https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates="+f(a)+"-"+f(b)+"&limit=120");
+    if(!r.ok)throw 0;
+    const j=await r.json();
+    LIVEF.ev=(j.events||[]).map(e=>{
+      const c=(e.competitions||[])[0]||{};let H=null,A=null;
+      (c.competitors||[]).forEach(t=>{
+        const o={name:ourTeam(t.team&&(t.team.displayName||t.team.name)),
+                 score:(t.score!=null&&t.score!=="")?+t.score:null};
+        if(t.homeAway==="home")H=o;else A=o;});
+      const st=(c.status||{}).type||{};
+      return {ko:Date.parse(e.date),H:H||{},A:A||{},state:st.state||"pre",done:!!st.completed,
+              clock:String((c.status||{}).displayClock||"").replace(/'+$/,"\u2032")};
+    }).filter(e=>!isNaN(e.ko));
+    LIVEF.fails=0;
+    liveDecorate();renderPulse();
+  }catch(e){if(++LIVEF.fails>=3)LIVEF.on=false;}
+}
+function liveFor(m){
+  if(!LIVEF.on||!LIVEF.ev.length)return null;
+  const ko=new Date(m.ko).getTime();let best=null;
+  for(const e of LIVEF.ev){
+    if(Math.abs(e.ko-ko)>15*60e3)continue;
+    if(e.H.name===m.home.n&&e.A.name===m.away.n)
+      return {state:e.state,done:e.done,clock:e.clock,hs:e.H.score,as:e.A.score};
+    if(e.H.name===m.away.n&&e.A.name===m.home.n)
+      return {state:e.state,done:e.done,clock:e.clock,hs:e.A.score,as:e.H.score};
+    if(!best&&(e.H.name===m.home.n||e.A.name===m.away.n||e.H.name===m.away.n||e.A.name===m.home.n)){
+      const sw=(e.H.name===m.away.n||e.A.name===m.home.n);
+      best={state:e.state,done:e.done,clock:e.clock,hs:sw?e.A.score:e.H.score,as:sw?e.H.score:e.A.score};
+    }
+  }
+  return best;
+}
+function midHTML(m,res){
+  if(res)return '<div class="final-score">'+res.h+'\u2013'+res.a+'</div><div class="final-tag">Full time</div>';
+  const le=liveFor(m);
+  if(le&&le.state==="in"&&le.hs!=null)
+    return '<div class="final-score">'+le.hs+'\u2013'+le.as+'</div><div class="final-tag live-tag"><span class="pulse"></span>'+esc(le.clock||"LIVE")+'</div>';
+  if(le&&le.done&&le.hs!=null)
+    return '<div class="final-score" style="opacity:.82">'+le.hs+'\u2013'+le.as+'</div><div class="final-tag">FT \u00b7 unofficial</div>';
+  return '<div class="vs">VS</div><div class="kotime">'+fmtTime(m.ko)+'</div><div class="koday">'+fmtWk(m.ko)+'</div>';
+}
+function liveDecorate(){
+  document.querySelectorAll("[data-mc]").forEach(n=>{
+    const m=FIXTURES.find(x=>x.id===n.dataset.mc);if(!m)return;
+    const res=state.results&&state.results[m.id];
+    const h=midHTML(m,res);if(n.innerHTML!==h)n.innerHTML=h;
+  });
+}
+function liveTick(){
+  const now=Date.now()+CLOCK_OFFSET;
+  const active=FIXTURES.some(m=>{const k=new Date(m.ko).getTime();return now>k-15*60e3&&now<k+150*60e3;});
+  if(active)fetchLive();
+}
+
 (async function init(){
   state.results=await getJSON("wc:results",true)||{};
   state.kteams=await getJSON("wc:kteams",true)||{};
@@ -1693,6 +1766,8 @@ function drawCardTrophy(x,cx,cy,s){
     welcomeDelta();
   }else{go("join");}
   renderPulse();setInterval(renderPulse,30000);
+  fetchLive();setInterval(liveTick,60000);
+  document.addEventListener("visibilitychange",function(){if(!document.hidden&&LIVEF.on)fetchLive();});
   if(!CONFIGURED){const w=document.getElementById("cfg-warn");if(w)w.style.display="block";}
   syncClock();setInterval(syncClock,600000);
   tickCountdown();setInterval(tickCountdown,1000);
