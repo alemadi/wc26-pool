@@ -316,6 +316,7 @@
   .kres .saved{width:14px;color:var(--ok);font-weight:800}
   .res-row .si:focus{outline:none;border-color:var(--gold)}
   .res-row .saved{color:var(--ok);font-size:14px;width:14px}
+  .btn.confirmall{width:100%;margin:2px 0 4px;background:linear-gradient(115deg,var(--gold-deep),var(--gold));color:#181106;border:none;font-weight:800;padding:12px;border-radius:12px;cursor:pointer;font:inherit;font-size:13px}
   .org-note{font-size:11px;color:var(--muted);line-height:1.5;margin:10px 0 14px;background:var(--glass);border-radius:12px;padding:11px 13px}
   .org-pick{margin:6px 0 10px}
 
@@ -1417,7 +1418,8 @@ function renderResultsEditor(){
   if(["R32","R16","QF","SF","FINAL"].indexOf(rnd)>=0){renderKnockoutEditor(host,rnd);return;}
   const list=FIXTURES.filter(m=>m.round===rnd&&!m.kn);
   if(!list.length){host.innerHTML='<div class="org-note">Knockout fixtures have no teams yet — results entry opens once the bracket is set.</div>';return;}
-  let html="";
+  let html='<button class="btn confirmall" onclick="confirmAllResults()">✓ Confirm all filled scores</button>'+
+    '<div class="org-note" style="margin-top:6px">Prefilled numbers from the live feed are <b>not saved</b> until confirmed — rows without a green ✓ are unsaved.</div>';
   list.forEach(m=>{
     const r=state.results[m.id];
     const lf=(!r&&typeof liveFor==="function")?liveFor(m):null;
@@ -1433,12 +1435,26 @@ function renderResultsEditor(){
     saveResult(id,document.querySelector('[data-rh="'+id+'"]').value,document.querySelector('[data-ra="'+id+'"]').value);
   }));
 }
-async function saveResult(id,h,a){
-  if(h===""||a===""){delete state.results[id];await setJSON("wc:results",state.results,true);const m=document.querySelector('[data-rs="'+id+'"]');if(m)m.textContent="";updateChip();return;}
+async function saveResult(id,h,a,quiet){
+  if(h===""||a===""){delete state.results[id];await setJSON("wc:results",state.results,true);const m=document.querySelector('[data-rs="'+id+'"]');if(m)m.textContent="";updateChip();return false;}
   state.results[id]={h:Math.max(0,parseInt(h,10)||0),a:Math.max(0,parseInt(a,10)||0)};
-  await setJSON("wc:results",state.results,true);
-  const m=document.querySelector('[data-rs="'+id+'"]');if(m)m.textContent="✓";
-  updateChip();toast("Result saved · standings updated ✓");
+  const ok=await setJSON("wc:results",state.results,true);
+  const m=document.querySelector('[data-rs="'+id+'"]');
+  if(!ok){delete state.results[id];if(m)m.textContent="✗";toast("⚠ Save failed — check connection and retry");return false;}
+  if(m)m.textContent="✓";
+  if(!quiet)toast("Result saved · standings updated ✓");
+  return true;
+}
+async function confirmAllResults(){
+  const ids=[...document.querySelectorAll('[data-rh]')].map(i=>i.dataset.rh);
+  let n=0;
+  for(const id of ids){
+    const h=document.querySelector('[data-rh="'+id+'"]').value;
+    const a=document.querySelector('[data-ra="'+id+'"]').value;
+    if(h===""||a==="")continue;
+    if(await saveResult(id,h,a,true))n++;
+  }
+  toast(n?("✓ "+n+" result"+(n===1?"":"s")+" confirmed · standings updated"):"Nothing to confirm — fill scores first");
 }
 
 /* ===== Knockout bracket: organizer editor + auto-propagation ===== */
