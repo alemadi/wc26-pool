@@ -110,6 +110,10 @@
   .ptable .prow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:12px;color:var(--cream);padding:3px 0}
   .ptable .prow b{color:var(--gold-bright);font-family:var(--font-d);font-size:14px;white-space:nowrap}
   .ptable .pfaint{color:var(--faint);font-size:10.5px}
+  .watchlink{display:flex;align-items:center;gap:9px;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:12px 15px;margin:12px 0 2px;font-size:12.5px;font-weight:700;color:var(--cream);text-decoration:none;backdrop-filter:blur(8px);transition:border-color .2s}
+  .watchlink:hover{border-color:var(--gold)}
+  .watchlink small{color:var(--muted);font-weight:600}
+  .watchlink .go{margin-left:auto;color:var(--gold);font-weight:800}
   .champ{margin-top:13px;background:linear-gradient(100deg,rgba(180,151,89,.14),rgba(239,51,64,.07));border:1px solid rgba(180,151,89,.4);border-radius:16px;padding:13px 15px}
   .champ .t{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px}
   .champ .t small{margin-left:auto;font-size:10px;color:var(--muted);font-weight:700;text-align:right}
@@ -397,6 +401,7 @@
       </div>
     </div>
     <div id="champ-card"></div>
+    <a class="watchlink" href="watch.html">📺 Where to watch in Doha <small>· fanzone, hotels &amp; Qatar kickoffs</small><span class="go">→</span></a>
     <div class="filters" id="filters"></div>
     <div id="match-list"></div>
   </section>
@@ -442,7 +447,7 @@
 
   <footer class="app">
     <b>QNB Staff WC2026</b> — staff World Cup pool · free to enter · no buy-ins, ever<br>
-    Kickoff times shown in Qatar time (AST · UTC+3). All 104 fixtures · 2026 FIFA World Cup.
+    Kickoff times shown in Qatar time (AST · UTC+3). All 104 fixtures · 2026 FIFA World Cup. · <a href="watch.html" style="color:var(--gold);text-decoration:none">Where to watch in Doha</a>
   </footer>
 </div>
 
