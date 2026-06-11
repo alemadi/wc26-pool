@@ -97,6 +97,13 @@
   .bar>i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--magenta),var(--gold));transition:width .5s cubic-bezier(.2,.8,.2,1)}
   .rules{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.5}
   .rules b{color:var(--cream);font-weight:700}
+  .ptbtn{display:block;margin:8px auto 0;background:none;border:none;color:var(--gold);font-size:11px;font-weight:800;letter-spacing:.4px;cursor:pointer;font-family:inherit;padding:4px 8px}
+  .ptable{display:none;margin-top:8px;border-top:1px solid var(--line-2);padding-top:4px;text-align:left}
+  .ptable.show{display:block}
+  .ptable .pgrp{font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:800;margin:10px 0 3px}
+  .ptable .prow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:12px;color:var(--cream);padding:3px 0}
+  .ptable .prow b{color:var(--gold-bright);font-family:var(--font-d);font-size:14px;white-space:nowrap}
+  .ptable .pfaint{color:var(--faint);font-size:10.5px}
   .champ{margin-top:13px;background:linear-gradient(100deg,rgba(231,200,121,.14),rgba(196,21,111,.1));border:1px solid rgba(231,200,121,.4);border-radius:16px;padding:13px 15px}
   .champ .t{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px}
   .champ .t small{margin-left:auto;font-size:10px;color:var(--muted);font-weight:700;text-align:right}
@@ -353,7 +360,7 @@
       <details style="margin-top:16px;font-size:11.5px;color:var(--muted);line-height:1.6">
         <summary style="cursor:pointer;color:var(--gold);font-weight:700">📜 Rules &amp; terms</summary>
         <div style="margin-top:8px">
-        <b>Free to enter — strictly no buy-ins, no side bets.</b> One entry per person; your real Instagram handle is your identity and a 4-digit PIN protects it. Predict every match. <b>Predictions lock at kickoff.</b> Group scoring: <b>+3</b> correct result, <b>+2</b> exact score. <b>Knockout rounds (from 28 June):</b> pick who advances — extra time and penalties count. Worth <b>+4</b> (Round of 32), <b>+5</b> (Round of 16), <b>+6</b> (quarter-finals), <b>+8</b> (semi-finals), <b>+6</b> (third place) and <b>+10</b> (Final); no exact-score bonus in knockouts. Knockout ties open for picks once both teams are confirmed and lock at kickoff. <b>Champion pick: +25 points</b> — locks with the tiebreaker on <b>Thursday 18 June, 7:00 PM Doha</b>. Results are official FIFA full-time scores. <b>Grand prize</b> goes to the overall #1; prize ties resolve by most exact scores, then most correct results, then closest total-goals tiebreaker, then earliest sign-up. Pool admins play for bragging rights only and are not prize-eligible. The winner is verified by DM from their Instagram account and an audit of their entry before any award. Tampering with other players' picks or entering predictions after lock by any means leads to removal. The organizer may correct errors and has final say. Your handle, display name, department and country are visible to other players; all data is deleted after the final.
+        <b>Free to enter — strictly no buy-ins, no side bets.</b> One entry per person; your real Instagram handle is your identity and a 4-digit PIN protects it. Predict every match. <b>Predictions lock at kickoff.</b> Group matches: <b>+3</b> for the correct result, plus a <b>+2</b> bonus if you nail the exact score (a perfect call = 5 points). Knockout matches (from 28 June): just pick who goes through — extra time and penalties count. Each round is worth more: <b>+4</b> Round of 32 → <b>+5</b> Round of 16 → <b>+6</b> quarter-finals → <b>+8</b> semi-finals → <b>+10</b> Final (third-place match <b>+6</b>); no exact-score bonus in knockouts. Ties open for picks once both teams are confirmed. <b>Champion pick: +25 points</b> — locks with the tiebreaker on <b>Thursday 18 June, 7:00 PM Doha</b>. Results are official FIFA full-time scores. <b>Grand prize</b> goes to the overall #1; prize ties resolve by most exact scores, then most correct results, then closest total-goals tiebreaker, then earliest sign-up. Pool admins play for bragging rights only and are not prize-eligible. The winner is verified by DM from their Instagram account and an audit of their entry before any award. Tampering with other players' picks or entering predictions after lock by any means leads to removal. The organizer may correct errors and has final say. Your handle, display name, department and country are visible to other players; all data is deleted after the final.
         </div>
       </details>
       <p class="sub" style="margin:14px 0 0;font-size:11px">Your picks sync to the live shared leaderboard — the same handle on any device resumes your game.</p>
@@ -366,7 +373,22 @@
     <div class="progress">
       <div class="top"><span>Predictions</span><span><b id="pred-count">0</b> / <span id="pred-total">72</span></span></div>
       <div class="bar"><i id="pred-bar" style="width:0%"></i></div>
-      <div class="rules"><b>+3</b> correct result &nbsp;·&nbsp; <b>+2</b> exact score &nbsp;·&nbsp; knockouts: pick who advances, <b>+4→+10</b> &nbsp;·&nbsp; lock at <b>kickoff</b> &nbsp;·&nbsp; 🏆 champion <b>+25</b></div>
+      <div class="rules"><b>+3</b> result &nbsp;·&nbsp; <b>+2</b> exact bonus &nbsp;·&nbsp; knockouts <b>+4→+10</b> &nbsp;·&nbsp; 🏆 champion <b>+25</b></div>
+      <button class="ptbtn" onclick="togglePts(this)">How do points work? ▾</button>
+      <div class="ptable" id="ptable">
+        <div class="pgrp">Group stage · 11–27 June · predict the result</div>
+        <div class="prow"><span>Correct result (win / draw / loss)</span><b>+3</b></div>
+        <div class="prow"><span>Exact score — bonus on top <span class="pfaint">(perfect call = 5)</span></span><b>+2</b></div>
+        <div class="pgrp">Knockouts · from 28 June · pick who goes through <span style="text-transform:none">(extra time &amp; penalties count)</span></div>
+        <div class="prow"><span>Round of 32</span><b>+4</b></div>
+        <div class="prow"><span>Round of 16</span><b>+5</b></div>
+        <div class="prow"><span>Quarter-final</span><b>+6</b></div>
+        <div class="prow"><span>Semi-final</span><b>+8</b></div>
+        <div class="prow"><span>Third-place match</span><b>+6</b></div>
+        <div class="prow"><span>Final</span><b>+10</b></div>
+        <div class="pgrp">Champion</div>
+        <div class="prow"><span>Called the World Champion <span class="pfaint">(locks 18 June, 7 PM Doha)</span></span><b>+25</b></div>
+      </div>
     </div>
     <div id="champ-card"></div>
     <div class="filters" id="filters"></div>
@@ -721,6 +743,7 @@ function predCount(){if(!state.player)return 0;let c=0;for(const id in state.pla
 
 let toastT;
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2200);}
+function togglePts(btn){const t=document.getElementById("ptable");const on=t.classList.toggle("show");btn.textContent=on?"How do points work? ▴":"How do points work? ▾";}
 
 function go(view){state.view=view;showView(view);}
 function showView(view){
