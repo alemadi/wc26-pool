@@ -1481,7 +1481,7 @@ function matchCard(m,idx){
       const ro=res.h>res.a?"H":res.h<res.a?"A":"D";
       const got=(p.o===ro?3:0)+((p.h!=null&&p.a!=null&&Number(p.h)===res.h&&Number(p.a)===res.a)?2:0);
       picks='<div class="result-line '+(p.o===ro?"win":"lose")+'">'+(p.o===ro?"✓ ":"✗ ")+esc(lab)+(p.h!=null?' &nbsp;<span style="color:var(--faint)">('+p.h+'–'+p.a+')</span>':'')+'<span class="pts">+'+got+' pts</span></div>';
-    }else{picks='<div class="result-line">'+(isLive(m)?'<span class="live-pill"><span class="pulse"></span>LIVE</span>':'<span class="locked-tag">Locked</span>')+' <span style="color:var(--muted)">'+esc(lab)+'</span></div>';}
+    }else{picks='<div class="result-line">'+(isLive(m)?'<span class="live-pill"><span class="pulse"></span>LIVE</span>':'<span class="locked-tag">Locked</span>')+' <span style="color:var(--muted)">'+esc(lab)+(p.o&&p.h!=null&&p.a!=null?' <span style="color:var(--faint)">('+p.h+'–'+p.a+')</span>':'')+'</span></div>';}
     picks+='<div class="cons" data-cons="'+m.id+'"></div>';
   }else{
     picks='<div class="picks" data-mid="'+m.id+'">'+
