@@ -220,6 +220,14 @@
   .pick:disabled{opacity:.55;cursor:default}
   .pick .mini{font-size:15px}
   .pick.draw{font-size:11px;letter-spacing:.5px}
+  /* reward layer: pop+glow on tap, stakes float, completion glow */
+  .pick.pop{animation:pickpop .42s cubic-bezier(.34,1.7,.5,1)}
+  .pick.pop::after{animation:popin .38s cubic-bezier(.34,2,.5,1)}
+  @keyframes pickpop{0%{transform:scale(.94)}55%{transform:scale(1.09);box-shadow:0 0 0 7px rgba(227,211,163,.22),0 6px 18px -6px rgba(180,151,89,.55),inset 0 0 0 1.5px rgba(255,255,255,.35)}100%{transform:scale(1);box-shadow:0 0 0 18px rgba(227,211,163,0),0 6px 18px -6px rgba(180,151,89,.55),inset 0 0 0 1.5px rgba(255,255,255,.35)}}
+  .stake-float{position:absolute;left:50%;top:-6px;transform:translateX(-50%);font-family:var(--font-d);font-size:14px;font-weight:600;letter-spacing:.06em;color:var(--gold-bright);text-shadow:0 1px 6px rgba(0,0,0,.75);pointer-events:none;white-space:nowrap;z-index:6;animation:stakerise 1s ease forwards}
+  @keyframes stakerise{0%{opacity:0;transform:translate(-50%,4px)}18%{opacity:1}100%{opacity:0;transform:translate(-50%,-30px)}}
+  #pred-bar.done{animation:predglow 1.1s ease 2}
+  @keyframes predglow{50%{filter:brightness(1.75)}}
   .btn,.bonus-toggle,.navbtn{touch-action:manipulation}
   @keyframes popin{from{transform:scale(0)}to{transform:scale(1)}}
   .live-pill{display:inline-flex;align-items:center;gap:6px;font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--c-red);font-weight:800;border:1px solid rgba(239,51,64,.45);padding:2px 8px;border-radius:6px}
@@ -1448,7 +1456,7 @@ function chipPick(id,h,a){
   P.h=h;P.a=a;P.o=h>a?"H":h<a?"A":"D";
   const ih=document.querySelector('[data-sh="'+id+'"]'),ia=document.querySelector('[data-sa="'+id+'"]');
   if(ih)ih.value=h;if(ia)ia.value=a;
-  syncPickRow(id);syncChips(id);syncProgress();updateChip();updateJump();
+  syncPickRow(id);syncChips(id);rewardPick(id);syncProgress();updateChip();updateJump();
   try{navigator.vibrate&&navigator.vibrate(8);}catch(e){}
   sndTick();
   queueSave();
@@ -1481,13 +1489,67 @@ function syncProgress(){
   const el=document.getElementById("pred-count");if(el)el.textContent=c;
   const te=document.getElementById("pred-total");if(te)te.textContent=tot;
   const bar=document.getElementById("pred-bar");if(bar)bar.style.width=(c/tot*100)+"%";
+  if(_lastPredC!=null&&tot>0&&c===tot&&_lastPredC<tot)celebratePicks(c,tot);
+  _lastPredC=c;
 }
 let saveChain=Promise.resolve();
 function queueSave(){saveChain=saveChain.then(()=>persistPlayer());}
+/* --- reward layer: pop + stakes float + completion confetti (frontend-only, all guarded) --- */
+function stakeText(id){
+  try{
+    const m=(typeof FIXTURES!=="undefined")?FIXTURES.find(x=>x.id===id):null;
+    if(m&&m.kn)return "+"+koPts(m)+" on the line";
+    const P=(state.player.predictions||{})[id]||{};
+    return (P.h!=null&&P.a!=null)?"+5 on the line \u26a1":"+3 on the line";
+  }catch(e){return "+3 on the line";}
+}
+function rewardPick(id){
+  try{
+    const row=document.querySelector('.picks[data-mid="'+id+'"]');if(!row)return;
+    const b=row.querySelector(".pick.sel");if(!b)return;
+    b.classList.remove("pop");void b.offsetWidth;b.classList.add("pop");
+    const old=b.querySelector(".stake-float");if(old)old.remove();
+    const f=document.createElement("span");f.className="stake-float";
+    f.textContent=stakeText(id);
+    b.appendChild(f);setTimeout(()=>{try{f.remove();}catch(e){}},1050);
+  }catch(e){}
+}
+var _lastPredC=null;
+function celebratePicks(c,tot){
+  try{
+    const bar=document.getElementById("pred-bar");
+    if(bar){bar.classList.remove("done");void bar.offsetWidth;bar.classList.add("done");}
+    toast("\ud83c\udf89 All picks locked in \u00b7 "+c+"/"+tot);
+    if(!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches))confettiBurst();
+  }catch(e){}
+}
+function confettiBurst(){
+  try{
+    const cv=document.createElement("canvas");
+    cv.style.cssText="position:fixed;inset:0;pointer-events:none;z-index:9999";
+    document.body.appendChild(cv);
+    const dpr=window.devicePixelRatio||1,W=innerWidth,H=innerHeight;
+    cv.width=W*dpr;cv.height=H*dpr;const cx=cv.getContext("2d");cx.scale(dpr,dpr);
+    const COLS=["#e3d3a3","#b49759","#ef3340","#2ea84f","#2d6fe0","#f4eee3"],P=[];
+    for(let i=0;i<110;i++)P.push({x:W/2+(Math.random()-.5)*60,y:H*.62,vx:(Math.random()-.5)*9,vy:-(5+Math.random()*8),s:4+Math.random()*5,r:Math.random()*Math.PI,vr:(Math.random()-.5)*.3,c:COLS[i%COLS.length],life:1});
+    let prev=performance.now();
+    (function frame(t){
+      const dt=Math.min((t-prev)/16.7,2);prev=t;cx.clearRect(0,0,W,H);
+      let alive=false;
+      for(const p of P){
+        p.vy+=.28*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.r+=p.vr*dt;p.life-=.008*dt;
+        if(p.life<=0||p.y>H+20)continue;alive=true;
+        cx.save();cx.globalAlpha=Math.max(p.life,0);cx.translate(p.x,p.y);cx.rotate(p.r);
+        cx.fillStyle=p.c;cx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.62);cx.restore();
+      }
+      if(alive)requestAnimationFrame(frame);else cv.remove();
+    })(prev);
+  }catch(e){}
+}
 function pickWinner(id,team){
   if(!state.player.predictions[id])state.player.predictions[id]={};
   state.player.predictions[id].w=team;
-  syncPickRow(id);syncProgress();updateChip();updateJump();
+  syncPickRow(id);rewardPick(id);syncProgress();updateChip();updateJump();
   try{navigator.vibrate&&navigator.vibrate(8);}catch(e){}
   sndTick();
   queueSave();
@@ -1495,7 +1557,7 @@ function pickWinner(id,team){
 function pickOutcome(id,o){
   if(!state.player.predictions[id])state.player.predictions[id]={};
   state.player.predictions[id].o=o;
-  syncPickRow(id);syncProgress();updateChip();updateJump();
+  syncPickRow(id);rewardPick(id);syncProgress();updateChip();updateJump();
   try{navigator.vibrate&&navigator.vibrate(8);}catch(e){}
   sndTick();
   queueSave();
@@ -1509,7 +1571,7 @@ function saveScore(id,h,a){
   if(P.h!=null&&P.a!=null&&!P.o){P.o=P.h>P.a?"H":P.h<P.a?"A":"D";}
   syncPickRow(id);syncProgress();updateChip();
   queueSave();
-  if(P.h!=null&&P.a!=null)toast("Score saved · bonus armed ⚡");
+  if(P.h!=null&&P.a!=null){toast("Score saved · bonus armed ⚡");rewardPick(id);}
 }
 async function persistPlayer(){const ok=await savePicksRPC();if(!ok&&lsGet("wc:pin")){toast("⚠️ Connection hiccup — retrying your save automatically…");setTimeout(queueSave,10000);}}
 
