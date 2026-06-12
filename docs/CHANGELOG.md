@@ -5,6 +5,25 @@ Rollback steps are exact and executable: git commands, plus inverse SQL for any 
 
 ---
 
+## 2026-06-12 19:12 (Doha) — Fix: countdown header jitter (flag imgs rebuilt every second)
+
+**Commits:** `6ceb352` (app) + this changelog commit.
+
+**What changed** (frontend only, `index.html`):
+- `tickCountdown()` runs every 1s. It was rebuilding the whole "Next kickoff" label — the two flag `<img>`s included — on every tick, not just the clock digits. Benign until today's `cca580c` set `.fl-img` to `width:auto;height:13px`: a just-recreated `<img>` has zero width until it decodes, so the header snapped narrower→wider once per second (the visible jitter).
+- The match label now re-renders only when its text actually changes (next match rolls over, or KO teams resolve); the day/hr/min/sec digits keep updating every tick as before.
+- Side benefit: ~86,400 fewer redundant DOM rebuilds per open tab per day.
+- Verified headless (jsdom): the flag `<img>` node is the same across four consecutive ticks; clock still renders all four units; swipe deck smoke test unaffected.
+
+**DB:** none. No kv writes, no SQL, `wc:results` untouched.
+
+**Rollback (git):**
+
+    git revert 6ceb352d7283cc086748abf63b6c7f6f52b8d584
+    git push https://x-access-token:<TOKEN>@github.com/alemadi/qnb-staff-wc2026.git main
+
+**Rollback (DB):** n/a.
+
 ## 2026-06-12 18:43 (Doha) — Swipe deck: score-at-end (removes the blocking +2 interstitial)
 
 **Commits:** `f81f4f4` (app) + this changelog commit. Rebased atop the stats wave (`f54ee51`) after a push race.
