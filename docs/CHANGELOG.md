@@ -159,3 +159,16 @@ writes simply start failing, which is the point) — but keep the gap short.
 **DB:** none. No kv writes, no SQL, `wc:results` untouched.
 
 **Rollback:** `git revert a576e35 && git push origin main` — pure frontend, nothing else to undo.
+
+## 2026-06-12 18:06 — Uniform-height flags in pick buttons & chips
+
+**Commits:** `cca580c` (app) + this changelog commit.
+
+**What changed** (frontend only, `index.html` — 3 CSS lines):
+- `.mini .fl-img` (flags inside pick buttons): was width-scaled to 24px with a `vertical-align:-5px` hack, so flags with extreme official ratios looked mismatched (Qatar 24×10 sliver vs Switzerland 24×24 square) and sat below center. Now `height:17px; width:auto; display:block` — uniform height, true proportions, flex-centered.
+- `.fl-img` base (inline flags: Qatar filter chip, locked-champion line): same fix at `height:13px; width:auto`.
+- `.flag .fl-img` (big team-card flags): unchanged visually, but gained an explicit `height:auto` so the new height-based base rule cannot squash it. `.sw-t .fl-img` (swipe deck) already had its own `height:auto` — untouched.
+
+**DB:** none. No kv writes, no SQL, `wc:results` untouched.
+
+**Rollback:** `git revert cca580c && git push origin main` — pure frontend, nothing else to undo.
