@@ -5,6 +5,25 @@ Rollback steps are exact and executable: git commands, plus inverse SQL for any 
 
 ---
 
+## 2026-06-12 18:43 (Doha) — Swipe deck: score-at-end (removes the blocking +2 interstitial)
+
+**Commits:** `f81f4f4` (app) + this changelog commit. Rebased atop the stats wave (`f54ee51`) after a push race.
+
+**What changed** (frontend only, `index.html`; supersedes the swipe +2 step from `e8f2729`):
+- Group-match swipes flow straight to the next card — the full-screen "Exact score? +2" step between every swipe is removed (functions, CSS, keyboard guard, `SW.step`), not bypassed.
+- The "All caught up" screen becomes a one-tap fine-tune pass when any of the session's group picks still lack an exact score: one row per match with the same score chips; rows mark green when armed; Done closes. Classic done screen when nothing needs scoring.
+- Scores save through the existing `chipPick` → `queueSave` path (main-list chips stay in sync); kickoff-locked matches are excluded from the fine-tune list. KO swipes and skip behaviour unchanged.
+- Verified headless (jsdom) post-rebase: 70-card deck swiped end-to-end, zero interstitials; fine-tune rows = group picks; chip tap sets score + outcome, `sel` moves on re-tap. Direction chosen by owner from a three-mode interactive feel test.
+
+**DB:** none. No kv writes, no SQL, `wc:results` untouched.
+
+**Rollback (git):**
+
+    git revert f81f4f44a1ecd59dadd5b9b978d97fbcadf251cb
+    git push https://x-access-token:<TOKEN>@github.com/alemadi/qnb-staff-wc2026.git main
+
+**Rollback (DB):** n/a.
+
 ## 2026-06-12 18:20 — Stats wave: clearer consensus, exact-score lines, finale office stats, champion map
 
 **Commits:** `f54ee51` (app) + this changelog commit.
