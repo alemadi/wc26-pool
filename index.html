@@ -1398,8 +1398,8 @@ function matchCard(m,idx){
       '<button class="pick draw '+(p.o==="D"?"sel":"")+'" data-o="D">DRAW</button>'+
       '<button class="pick '+(p.o==="A"?"sel":"")+'" data-o="A" aria-label="Pick '+esc(m.away.n)+'"><span class="mini">'+m.away.f+'</span></button></div>'+
       '<div class="chips-lab">Exact score · one tap · +2 bonus</div>'+
-      '<div class="chips" data-ch="'+m.id+'">'+SCORE_CHIPS.map(c=>'<button class="chipb'+((p.h===c[0]&&p.a===c[1])?' sel':'')+'" data-cid="'+m.id+'" data-h="'+c[0]+'" data-a="'+c[1]+'">'+c[0]+'\u2013'+c[1]+'</button>').join('')+'<button class="chipb custom" data-bt="'+m.id+'">custom\u2026</button></div>'+
-      '<div class="bonus-fields '+((p.h!=null&&!SCORE_CHIPS.some(c=>c[0]===p.h&&c[1]===p.a))?"show":"")+'" data-bf="'+m.id+'">'+
+      '<div class="chips" data-ch="'+m.id+'">'+chipRowHTML(m.id)+'</div>'+
+      '<div class="bonus-fields '+((p.h!=null&&!ALL_CHIPS.some(c=>c[0]===p.h&&c[1]===p.a))?"show":"")+'" data-bf="'+m.id+'">'+
       '<label>'+m.home.f+'</label><input class="scorein" type="number" min="0" max="20" inputmode="numeric" aria-label="'+esc(m.home.n)+' goals" data-sh="'+m.id+'" value="'+(p.h!=null?p.h:"")+'">'+
       '<span class="scoredash">–</span><input class="scorein" type="number" min="0" max="20" inputmode="numeric" aria-label="'+esc(m.away.n)+' goals" data-sa="'+m.id+'" value="'+(p.a!=null?p.a:"")+'"><label>'+m.away.f+'</label></div></div>'+
       '<div class="lockin'+((lockTs(m)-Date.now()-CLOCK_OFFSET)<7200000?' soon':'')+'" data-lockts="'+lockTs(m)+'">⏳ '+fmtLeft(lockTs(m)-Date.now()-CLOCK_OFFSET)+'</div>';
@@ -1458,21 +1458,35 @@ function koMatchCard(m,idx){
     (!win&&!lk?'<div class="venue">'+(m.v?esc(m.v):"World Cup 2026 · Knockout stage")+'</div>':'')+picks+'</div>';
 }
 
-const SCORE_CHIPS=[[1,0],[2,0],[2,1],[1,1],[0,0],[3,1],[0,1],[1,2]];
+/* Exact-score chips follow the player's result pick: one set per outcome
+   (same sets as the swipe-deck fine-tune pass). Before a result is picked we
+   show one starter chip per outcome so a single tap still works. */
+const CHIP_SETS={H:[[1,0],[2,0],[2,1],[3,1]],D:[[0,0],[1,1],[2,2]],A:[[0,1],[0,2],[1,2],[1,3]]};
+const CHIP_START=[[1,0],[1,1],[0,1]];
+const ALL_CHIPS=CHIP_SETS.H.concat(CHIP_SETS.D,CHIP_SETS.A);
+function chipRowHTML(id){
+  const P=state.player.predictions[id]||{};
+  const set=CHIP_SETS[P.o]||CHIP_START;
+  return set.map(c=>'<button class="chipb'+((P.h===c[0]&&P.a===c[1])?' sel':'')+'" data-cid="'+id+'" data-h="'+c[0]+'" data-a="'+c[1]+'">'+c[0]+'\u2013'+c[1]+'</button>').join('')+'<button class="chipb custom" data-bt="'+id+'">custom\u2026</button>';
+}
+function rerenderChips(id){
+  const host=document.querySelector('.chips[data-ch="'+id+'"]');
+  if(!host)return;
+  host.innerHTML=chipRowHTML(id);
+  const cb=host.querySelector(".chipb.custom");
+  if(cb)cb.addEventListener("click",()=>{const f=document.querySelector('[data-bf="'+id+'"]');if(f)f.classList.toggle("show");});
+  host.querySelectorAll(".chipb[data-cid]").forEach(b=>b.addEventListener("click",()=>chipPick(b.dataset.cid,+b.dataset.h,+b.dataset.a)));
+}
 function chipPick(id,h,a){
   if(!state.player.predictions[id])state.player.predictions[id]={};
   const P=state.player.predictions[id];
   P.h=h;P.a=a;P.o=h>a?"H":h<a?"A":"D";
   const ih=document.querySelector('[data-sh="'+id+'"]'),ia=document.querySelector('[data-sa="'+id+'"]');
   if(ih)ih.value=h;if(ia)ia.value=a;
-  syncPickRow(id);syncChips(id);rewardPick(id);syncProgress();updateChip();updateJump();
+  syncPickRow(id);rerenderChips(id);rewardPick(id);syncProgress();updateChip();updateJump();
   try{navigator.vibrate&&navigator.vibrate(8);}catch(e){}
   sndTick();
   queueSave();
-}
-function syncChips(id){
-  const P=state.player.predictions[id]||{};
-  document.querySelectorAll('.chipb[data-cid="'+id+'"]').forEach(b=>b.classList.toggle('sel',+b.dataset.h===P.h&&+b.dataset.a===P.a));
 }
 function bindMatchEvents(){
   document.querySelectorAll(".picks").forEach(row=>{row.querySelectorAll(".pick").forEach(btn=>btn.addEventListener("click",()=>{
@@ -1565,7 +1579,16 @@ function pickWinner(id,team){
 }
 function pickOutcome(id,o){
   if(!state.player.predictions[id])state.player.predictions[id]={};
-  state.player.predictions[id].o=o;
+  const P=state.player.predictions[id];
+  P.o=o;
+  if(P.h!=null&&P.a!=null){
+    const so=P.h>P.a?"H":P.h<P.a?"A":"D";
+    if(so!==o){P.h=null;P.a=null;
+      const ih=document.querySelector('[data-sh="'+id+'"]'),ia=document.querySelector('[data-sa="'+id+'"]');
+      if(ih)ih.value="";if(ia)ia.value="";
+      toast("Exact score cleared \u2014 it didn\u2019t match your new result");}
+  }
+  rerenderChips(id);
   syncPickRow(id);rewardPick(id);syncProgress();updateChip();updateJump();
   try{navigator.vibrate&&navigator.vibrate(8);}catch(e){}
   sndTick();
@@ -1577,7 +1600,8 @@ function saveScore(id,h,a){
   const hv=h===""?null:Math.max(0,Math.min(20,parseInt(h,10)));
   const av=a===""?null:Math.max(0,Math.min(20,parseInt(a,10)));
   P.h=isNaN(hv)?null:hv;P.a=isNaN(av)?null:av;
-  if(P.h!=null&&P.a!=null&&!P.o){P.o=P.h>P.a?"H":P.h<P.a?"A":"D";}
+  if(P.h!=null&&P.a!=null){P.o=P.h>P.a?"H":P.h<P.a?"A":"D";}
+  rerenderChips(id);
   syncPickRow(id);syncProgress();updateChip();
   queueSave();
   if(P.h!=null&&P.a!=null){toast("Score saved · bonus armed ⚡");rewardPick(id);}
