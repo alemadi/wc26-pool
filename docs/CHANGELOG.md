@@ -326,3 +326,17 @@ writes simply start failing, which is the point) — but keep the gap short.
 **Rollback (DB), if applicable:** none — frontend only.
 
 **kv snapshot taken before overwrite (if applicable):** n/a.
+
+## 2026-06-12 21:43 (Doha)
+**Pushed:** 6bab9cb (app) + the changelog commit that follows it
+**Changed:** Fun-stats sprinkle (UX wave 3): rotating fun-stat ticker under the leaderboard podium (biggest climber / exact-score king / sharpest department / hot hand / upset hunter); personal fun stats on the Me tab (signature scoreline, most-backed team, office-agreement/maverick line); "🧨 Upset — only N% saw it coming" on confirmed match cards; reveal finale gains 💔 heartbreak and 🏢 dept-of-the-day lines (cap 2→3). consensus() gains a second pass (CONS.bestUpset, CONS.deptByDay). No new queries; demo mode unaffected; no DB/robot/kv change.
+
+**Rollback (git):**
+    git revert 6bab9cb
+    git push https://x-access-token:<TOKEN>@github.com/alemadi/qnb-staff-wc2026.git main
+
+**Rollback (DB), if applicable:**
+    N/A — frontend only, no SQL or kv writes in this push.
+
+**kv snapshot taken before overwrite (if applicable):**
+    N/A — no kv key was written.
