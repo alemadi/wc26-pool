@@ -1812,6 +1812,12 @@ function startLbTicker(rows){
   const facts=[];
   let cl=null;rows.forEach(function(r){if(r.dRank>0&&(!cl||r.dRank>cl.dRank))cl=r;});
   if(cl)facts.push('\ud83d\udcc8 Biggest climber: <b>'+esc(cl.name)+'</b> \u25b2'+cl.dRank+' overnight');
+  if(rows.length>=2&&rows[0].pts>0){
+    let tie=0;rows.forEach(function(r){if(r.rank===1)tie++;});
+    if(tie>=2)facts.push('\u2696\ufe0f <b>'+tie+'-way tie</b> at the top \u2014 all square on '+rows[0].pts+' pts');
+    else{const gap=rows[0].pts-rows[1].pts;
+      if(gap===0)facts.push('\u2696\ufe0f Photo finish \u2014 top two level on points, split only by exact scores');
+      else if(gap<=3)facts.push('\u2696\ufe0f Photo finish \u2014 <b>'+gap+' pt'+(gap===1?'':'s')+'</b> between the top two');}}
   let ek=null;rows.forEach(function(r){if(r.exact>=2&&(!ek||r.exact>ek.exact))ek=r;});
   if(ek)facts.push('\ud83c\udfaf Exact-score king: <b>'+esc(ek.name)+'</b> \u2014 '+ek.exact+' nailed');
   const dm={};rows.forEach(function(r){if(r.dept)(dm[r.dept]=dm[r.dept]||[]).push(r.pts);});
@@ -1822,6 +1828,7 @@ function startLbTicker(rows){
   if(CONFIGURED)consensus().then(function(c){
     if(c.best&&c.best.streak>=3)facts.push('\ud83d\udd25 Hot hand: <b>'+esc((c.best.name||"").split(" ")[0])+'</b> \u2014 '+c.best.streak+' in a row');
     if(c.bestUpset&&c.bestUpset.n>=2)facts.push('\ud83d\udde1 Upset hunter: <b>'+esc(c.bestUpset.name)+'</b> \u2014 '+c.bestUpset.n+' shocks called');
+    if(c.perfectN>=1)facts.push('\ud83d\udd2e <b>'+c.perfectN+'</b> colleague'+(c.perfectN===1?'':'s')+' still perfect \u2014 not a single miss');
   }).catch(function(){});
   if(!facts.length)return;
   let i=0;
@@ -1892,11 +1899,17 @@ async function renderMe(){
         if(tot<5)return;n++;if(v.w===top)agree++;}
       else{if(!v.o)return;const tot=cc.H+cc.D+cc.A;if(tot<5)return;
         const top=(cc.H>=cc.D&&cc.H>=cc.A)?"H":(cc.D>=cc.A?"D":"A");n++;if(v.o===top)agree++;}});
-    if(n<5)return;
-    const pct=Math.round(agree/n*100);
-    const line=pct<=40?'\ud83c\udccf Office maverick \u2014 you defy the room <b>'+(100-pct)+'%</b> of the time'
-              :'\ud83e\udded You side with the office <b>'+pct+'%</b> of the time';
-    f.dataset.agree="1";f.insertAdjacentHTML("beforeend",'<div>'+line+'</div>');f.style.display="";
+    const adds=[];
+    if(n>=5){const pct=Math.round(agree/n*100);
+      adds.push(pct<=40?('\ud83c\udccf Office maverick \u2014 you defy the room <b>'+(100-pct)+'%</b> of the time')
+               :('\ud83e\udded You side with the office <b>'+pct+'%</b> of the time'));}
+    if(c.officeHit&&c.officeHit.t>=20&&s.scored>=3&&s.correct>=0){
+      const op=Math.round(c.officeHit.h/c.officeHit.t*100),me2=Math.round(s.correct/s.scored*100);
+      adds.push('\ud83d\udcca Your hit rate: <b>'+me2+'%</b> \u00b7 office average '+op+'%');}
+    if(c.twin&&c.twin.n>=5&&c.twin.slug&&c.twin.slug!==state.meSlug)
+      adds.push('\ud83e\udd1d Pick twin: <b>'+esc(c.twin.name)+'</b> \u2014 '+c.twin.n+' shared picks');
+    if(!adds.length)return;
+    f.dataset.agree="1";f.insertAdjacentHTML("beforeend",adds.map(function(t){return '<div>'+t+'</div>';}).join(""));f.style.display="";
   }).catch(function(){});
   const mc=document.getElementById("mecard");
   if(mc)mc.insertAdjacentHTML("beforeend",
@@ -2364,6 +2377,23 @@ async function pickRival(){
 }
 async function clearRival(){lsDel("wc:rival");renderMe();}
 
+/* one plain-text fun stat for the share card — own picks only, always available */
+function shareFunLine(){
+  try{
+    if(!state.player)return "";
+    const pr=state.player.predictions||{},scm={},tm={};
+    for(const id in pr){const v=pr[id];if(!v)continue;const m=FIXBYID[id];if(!m)continue;
+      if(!m.kn&&v.h!=null&&v.a!=null)scm[v.h+"-"+v.a]=(scm[v.h+"-"+v.a]||0)+1;
+      if(m.kn){if(v.w)tm[v.w]=(tm[v.w]||0)+1;}
+      else if(v.o==="H")tm[m.home.n]=(tm[m.home.n]||0)+1;
+      else if(v.o==="A")tm[m.away.n]=(tm[m.away.n]||0)+1;}
+    let ts=null;for(const k in scm)if(!ts||scm[k]>scm[ts])ts=k;
+    if(ts&&scm[ts]>=3)return "Signature scoreline "+ts.replace("-","\u2013")+" \u00b7 picked \u00d7"+scm[ts];
+    let tt=null;for(const k in tm)if(!tt||tm[k]>tm[tt])tt=k;
+    if(tt&&tm[tt]>=3)return "Backing "+tt+" \u00d7"+tm[tt]+" this tournament";
+    return "";
+  }catch(e){return "";}
+}
 async function shareCard(){
   try{
     if(!state.player){toast("Sign in first");return;}
@@ -2399,6 +2429,9 @@ async function shareCard(){
       x.strokeStyle="rgba(244,238,227,.14)";x.lineWidth=2;roundRect(x,cx-125,930,250,170,22);x.stroke();
       x.fillStyle="#e3d3a3";x.font="400 84px Anton,'Arial Narrow',sans-serif";x.fillText(String(p[0]),cx,1018);
       x.fillStyle="rgba(244,238,227,.5)";x.font="700 22px 'Hanken Grotesk',sans-serif";x.fillText(p[1],cx,1066);});
+    const flin=shareFunLine();
+    if(flin){x.fillStyle="rgba(227,211,163,.85)";x.font="600 28px 'Hanken Grotesk',sans-serif";
+      x.fillText("\u2728 "+flin+" \u2728",W/2,1158);}
     x.fillStyle="#b49759";x.font="700 30px 'Hanken Grotesk',sans-serif";
     x.fillText("Think you can beat me? \u2192 staffchallenge26.com",W/2,1220);
     x.fillStyle="rgba(244,238,227,.35)";x.font="600 22px 'Hanken Grotesk',sans-serif";
@@ -2562,6 +2595,7 @@ function consensus(){
     const done=FIXTURES.filter(function(f){const r=state.results[f.id];return r&&(f.kn?r.w!=null:r.h!=null);})
       .sort(function(a,b){return new Date(a.ko)-new Date(b.ko);});
     let best={name:"",streak:0,hits:0};const pday={};
+    let officeHits=0,officeTot=0,perfectN=0;
     players.forEach(function(p){
       if(!p)return;
       if(p.champ){champN++;cm[p.champ]=(cm[p.champ]||0)+1;}
@@ -2581,6 +2615,8 @@ function consensus(){
         const k=dayKey(f.ko);(byDay[k]=byDay[k]||[]).push(!!hit);});
       let stk=0;for(let i=seq.length-1;i>=0;i--){if(seq[i])stk++;else break;}
       if(stk>best.streak||(stk===best.streak&&hits>best.hits))best={name:p.name||p.slug||"",streak:stk,hits:hits};
+      officeHits+=hits;officeTot+=seq.length;
+      if(seq.length>=3&&hits===seq.length)perfectN++;
       for(const k in byDay){const a=byDay[k];if(a.length>=2&&a.every(function(x){return x;}))pday[k]=(pday[k]||0)+1;}
     });
     /* second pass (needs the finished map): upset hunters + department form by day */
@@ -2590,18 +2626,33 @@ function consensus(){
         if(tot>=8&&r.w!=null)resPct[f.id]=Math.round((c.w[r.w]||0)/tot*100);}
       else{const tot=c.H+c.D+c.A;
         if(tot>=8){const ro=r.h>r.a?"H":r.h<r.a?"A":"D";resPct[f.id]=Math.round(c[ro]/tot*100);}}});
-    let bestUp={name:"",n:0};const deptDay={};
+    let bestUp={name:"",n:0};const deptDay={};const dayTop={};const dayHit={};
+    const mp=(state.meSlug&&state.player&&state.player.predictions)||null;
+    let twin={name:"",slug:"",n:0};
     players.forEach(function(p){
-      if(!p)return;const pr=p.predictions||{};let up=0;
+      if(!p)return;const pr=p.predictions||{};let up=0;const ptsBy={};
       done.forEach(function(f){const v=pr[f.id];if(!v)return;
         if(f.kn?!v.w:!v.o)return;
         const r=state.results[f.id];
         const hit=f.kn?(v.w===r.w):(v.o===(r.h>r.a?"H":r.h<r.a?"A":"D"));
         const dk=dayKey(f.ko),dd=deptDay[dk]||(deptDay[dk]={}),dn=p.dept||"";
         if(dn){const e=dd[dn]||(dd[dn]={hit:0,tot:0});e.tot++;if(hit)e.hit++;}
+        const dh=dayHit[dk]||(dayHit[dk]={hit:0,tot:0});dh.tot++;if(hit)dh.hit++;
+        let vp=0;
+        if(f.kn){if(hit)vp=koPts(f);}
+        else{if(hit)vp=3;if(v.h!=null&&v.a!=null&&Number(v.h)===r.h&&Number(v.a)===r.a)vp+=2;}
+        if(vp)ptsBy[dk]=(ptsBy[dk]||0)+vp;
         if(hit&&resPct[f.id]!=null&&resPct[f.id]<=30)up++;});
-      if(up>bestUp.n)bestUp={name:p.name||p.slug||"",n:up};});
-    CONS={t:Date.now(),map:map,n:players.length,champN:champN,champMap:cm,best:best,perfectByDay:pday,bestUpset:bestUp,deptByDay:deptDay,busy:null};
+      if(up>bestUp.n)bestUp={name:p.name||p.slug||"",n:up};
+      for(const k in ptsBy){const cur=dayTop[k];
+        if(!cur||ptsBy[k]>cur.pts)dayTop[k]={name:p.name||p.slug||"",slug:p.slug||"",pts:ptsBy[k]};}
+      if(mp&&p.slug!==state.meSlug){let nn=0;
+        for(const id in mp){const a=mp[id],bq=pr[id];if(!a||!bq)continue;
+          const m=FIXBYID[id];if(!m)continue;
+          if(m.kn){if(a.w&&a.w===bq.w)nn++;}
+          else{if(a.o&&a.o===bq.o)nn++;}}
+        if(nn>twin.n)twin={name:p.name||p.slug||"",slug:p.slug||"",n:nn};}});
+    CONS={t:Date.now(),map:map,n:players.length,champN:champN,champMap:cm,best:best,perfectByDay:pday,bestUpset:bestUp,deptByDay:deptDay,dayTop:dayTop,dayHit:dayHit,twin:twin,perfectN:perfectN,officeHit:{h:officeHits,t:officeTot},busy:null};
     return CONS;
   })();
   return CONS.busy;
@@ -2853,6 +2904,10 @@ function revealOfficeLines(){
     if(pct!=null&&(worst===null||pct<worst.pct))worst={pct:pct,m:m};
     const k=dayKey(m.ko);if(!lastDay||k>lastDay)lastDay=k;
   });
+  if(lastDay&&CONS.dayTop&&CONS.dayTop[lastDay]&&CONS.dayTop[lastDay].pts>=5){
+    const t=CONS.dayTop[lastDay];
+    out.push(t.slug===state.meSlug?('\ud83e\udd47 Top scorer of the day: <b>you</b> \u2014 +'+t.pts+' \ud83d\udc51')
+            :('\ud83e\udd47 Top scorer of the day: '+esc(t.name)+' \u2014 +'+t.pts));}
   if(worst&&worst.pct<=45){const mv=fxView(worst.m);
     out.push('\ud83d\ude2c '+(100-worst.pct)+'% of the office missed '+esc(mv.home.n)+' v '+esc(mv.away.n));}
   /* biggest heartbreak: the most-backed pick that didn't land */
@@ -2867,6 +2922,8 @@ function revealOfficeLines(){
       [["H",mv.home.n],["D","a draw"],["A",mv.away.n]].forEach(function(o){
         if(o[0]!==ro&&c[o[0]]>=15&&(!hb||c[o[0]]>hb.n))hb={n:c[o[0]],who:o[1]};});}});
   if(hb)out.push('\ud83d\udc94 '+hb.n+' colleagues backed '+esc(hb.who)+' \u2014 hearts broken');
+  if(lastDay&&CONS.dayHit&&CONS.dayHit[lastDay]&&CONS.dayHit[lastDay].tot>=10)
+    out.push('\ud83d\udcca The office hit '+Math.round(CONS.dayHit[lastDay].hit/CONS.dayHit[lastDay].tot*100)+'% of the day\u2019s calls');
   if(CONS.best&&CONS.best.streak>=3)
     out.push('\ud83d\udd25 Longest streak: '+esc((CONS.best.name||"").split(" ")[0])+' \u2014 '+CONS.best.streak+' in a row');
   /* department of the day: best hit rate on the last revealed matchday */
@@ -2877,7 +2934,7 @@ function revealOfficeLines(){
     if(bd)out.push('\ud83c\udfe2 Dept of the day: '+esc(bd.d)+' \u2014 '+Math.round(bd.r*100)+'% hit rate');}
   if(out.length<3&&lastDay&&CONS.perfectByDay&&CONS.perfectByDay[lastDay])
     out.push('\ud83d\udc8e '+CONS.perfectByDay[lastDay]+' colleague'+(CONS.perfectByDay[lastDay]===1?'':'s')+' had a perfect day');
-  return out.slice(0,3);
+  return out.slice(0,4);
 }
 function fillRevealOffice(){
   const of=document.getElementById("rv-of");if(!of)return;
