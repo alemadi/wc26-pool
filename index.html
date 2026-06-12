@@ -122,10 +122,6 @@
   .ptable .prow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:12px;color:var(--cream);padding:3px 0}
   .ptable .prow b{color:var(--gold-bright);font-family:var(--font-d);font-size:14px;white-space:nowrap}
   .ptable .pfaint{color:var(--faint);font-size:10.5px}
-  .watchlink{display:flex;align-items:center;gap:9px;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:12px 15px;margin:12px 0 2px;font-size:12.5px;font-weight:700;color:var(--cream);text-decoration:none;transition:border-color .2s}
-  .watchlink:hover{border-color:var(--gold)}
-  .watchlink small{color:var(--muted);font-weight:600}
-  .watchlink .go{margin-left:auto;color:var(--gold);font-weight:800}
   /* Prizes — departure board */
   .dep{background:#0c0c10;border:1px solid var(--line);border-radius:16px;padding:13px 14px 6px;margin:2px 0 16px;box-shadow:0 12px 36px rgba(0,0,0,.5)}
   .dep-hd{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line-2);padding-bottom:9px;margin-bottom:3px}
@@ -420,12 +416,18 @@
   .qpbtn:active{transform:scale(.985)}
   .swipe{position:fixed;inset:0;z-index:200;background:rgba(6,6,9,.97);display:flex;flex-direction:column;padding:calc(14px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
   .sw-top{display:flex;align-items:center;gap:12px}
-  .sw-x,.sw-skip{font:inherit;background:none;border:none;color:var(--faint);font-weight:800;cursor:pointer;font-size:14px;padding:8px}
+  .sw-x{flex:none;width:42px;height:42px;border-radius:99px;background:var(--glass);border:1px solid var(--line);color:var(--cream);font:inherit;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:transform .12s}
+  .sw-x:active{transform:scale(.9)}
+  .sw-skip{font:inherit;background:none;border:none;color:var(--faint);font-weight:800;cursor:pointer;font-size:14px;padding:8px}
+  .sw-grab{flex:none;width:42px;height:4px;border-radius:99px;background:var(--line);margin:0 auto 10px}
+  .sw-grab,.sw-top,.rv-top,.faq-top{touch-action:none}
   .sw-prog{flex:1}
   .sw-prog .bar{margin-top:5px}
   #sw-count{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
   .sw-stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
   .sw-card{width:min(320px,86vw);background:#15151a;border:1px solid rgba(180,151,89,.5);border-radius:24px;padding:30px 20px 30px;text-align:center;touch-action:none;user-select:none;-webkit-user-select:none;animation:sw-in .25s ease;will-change:transform;cursor:grab}
+  @keyframes sw-peek{0%,100%{transform:none}28%{transform:translateX(-22px) rotate(-3.4deg)}60%{transform:translateX(20px) rotate(3deg)}84%{transform:translateX(-6px) rotate(-1deg)}}
+  .sw-card.peek{animation:sw-in .25s ease,sw-peek 1.5s cubic-bezier(.4,0,.25,1) .4s 1}
   .sw-tag{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
   .sw-teams{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:26px}
   .sw-t{flex:1;display:flex;flex-direction:column;align-items:center;gap:12px;font-size:14px;font-weight:800;color:var(--cream)}
@@ -493,7 +495,7 @@
   .faqov{position:fixed;inset:0;z-index:230;background:rgba(6,6,9,.97);display:flex;flex-direction:column;padding:calc(14px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
   .faq-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
   .faq-title{flex:1;text-align:center;font-family:var(--font-d);font-size:15px;letter-spacing:.22em;color:var(--gold-bright)}
-  .faq-sp{width:34px;flex:none}
+  .faq-sp{width:42px;flex:none}
   .faq-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:9px;max-width:520px;width:100%;margin:0 auto}
   .faq-item{background:#0f0f12;border:1px solid var(--line);border-radius:13px;overflow:hidden;flex:none}
   .faq-q{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;color:var(--cream);font:inherit;font-size:13px;font-weight:800;padding:13px 16px;cursor:pointer}
@@ -505,7 +507,7 @@
   .faq-link{display:block;margin:14px auto 0;background:none;border:0;color:var(--faint);font:inherit;font-size:12px;font-weight:700;text-decoration:underline;cursor:pointer}
   .me-faq{cursor:pointer}
   .me-faq b{color:var(--gold);font-size:15px}
-  @media (prefers-reduced-motion:reduce){.pb-dot{animation:none}.sk{animation:none}.sw-card{animation:none}.rv-card{animation:none}.rv-res,.rv-stamp{transition:none}}
+  @media (prefers-reduced-motion:reduce){.pb-dot{animation:none}.sk{animation:none}.sw-card,.sw-card.peek{animation:none}.rv-card{animation:none}.rv-res,.rv-stamp{transition:none}}
 
   footer.app{text-align:center;font-size:10.5px;color:var(--faint);padding:26px 10px 6px;line-height:1.7}
   footer.app b{color:var(--muted)}
@@ -622,7 +624,7 @@
     <div class="progress">
       <div class="top"><span>Predictions</span><span><b id="pred-count">0</b> / <span id="pred-total">72</span></span></div>
       <div class="bar"><i id="pred-bar" style="width:0%"></i></div>
-      <button id="qpbtn" class="qpbtn" style="display:none" onclick="openSwipe()">⚡ Quick-pick · <span id="qp-left">0</span> left</button>
+      <button id="qpbtn" class="qpbtn" style="display:none" onclick="openSwipe()">⚡ Swipe to pick · <span id="qp-left">0</span> left</button>
       <div class="rules"><b>+3</b> result &nbsp;·&nbsp; <b>+2</b> exact bonus &nbsp;·&nbsp; knockouts <b>+4→+10</b> &nbsp;·&nbsp; 🏆 champion <b>+25</b> &nbsp;·&nbsp; ties break on <b>most predictions</b></div>
       <button class="ptbtn" onclick="togglePts(this)">How do points work? ▾</button>
       <div class="ptable" id="ptable">
@@ -641,7 +643,6 @@
       </div>
     </div>
     <div id="champ-card"></div>
-    <a class="watchlink" href="watch.html">📺 Where to watch in Doha <small>· fanzone, hotels &amp; Qatar kickoffs</small><span class="go">→</span></a>
     <div class="filters" id="filters"></div>
     <div id="match-list"></div>
   </section>
@@ -707,26 +708,30 @@
   <button class="navbtn" id="nav-me" onclick="go('me')"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>Me</button>
 </nav>
 <div id="faqov" class="faqov" style="display:none" role="dialog" aria-modal="true" aria-label="How it works">
+    <div class="sw-grab" aria-hidden="true"></div>
     <div class="faq-top">
+      <span class="faq-sp"></span>
+      <div class="faq-title">HOW IT WORKS</div>
       <button class="sw-x" onclick="closeFaq()" aria-label="Close">✕</button>
-      <div class="faq-title">HOW IT WORKS</div><span class="faq-sp"></span>
     </div>
     <div class="faq-list" id="faq-list"></div>
   </div>
   <div id="reveal" class="reveal" style="display:none" role="dialog" aria-modal="true" aria-label="Results reveal">
+    <div class="sw-grab" aria-hidden="true"></div>
     <div class="rv-top">
-      <button class="sw-x" onclick="closeReveal()" aria-label="Close">✕</button>
-      <div class="rv-mid"><span id="rv-step"></span><div class="rv-count">+<span id="rv-odo">0</span></div></div>
       <button class="sw-skip" onclick="revealSummary()">skip ↓</button>
+      <div class="rv-mid"><span id="rv-step"></span><div class="rv-count">+<span id="rv-odo">0</span></div></div>
+      <button class="sw-x" onclick="closeReveal()" aria-label="Close">✕</button>
     </div>
     <div class="rv-stage" id="rv-stage"></div>
     <div class="rv-foot" id="rv-foot"></div>
   </div>
-  <div id="swipe" class="swipe" style="display:none" role="dialog" aria-modal="true" aria-label="Quick-pick">
+  <div id="swipe" class="swipe" style="display:none" role="dialog" aria-modal="true" aria-label="Swipe to pick">
+    <div class="sw-grab" aria-hidden="true"></div>
     <div class="sw-top">
-      <button class="sw-x" onclick="closeSwipe()" aria-label="Close">✕</button>
-      <div class="sw-prog"><span id="sw-count"></span><div class="bar"><i id="sw-bar" style="width:0%"></i></div></div>
       <button class="sw-skip" onclick="swipeSkip()">skip ↷</button>
+      <div class="sw-prog"><span id="sw-count"></span><div class="bar"><i id="sw-bar" style="width:0%"></i></div></div>
+      <button class="sw-x" onclick="closeSwipe()" aria-label="Close">✕</button>
     </div>
     <div class="sw-stage" id="sw-stage"></div>
     <div class="sw-legend" id="sw-legend"></div>
@@ -2348,12 +2353,30 @@ function renderDayBanner(){
   el.style.display="block";
 }
 
+/* ===== drag-down-to-close: grabber + header on every overlay ===== */
+function armSheet(panelSel,fn){
+  const p=document.querySelector(panelSel);if(!p||!window.PointerEvent)return;
+  p.querySelectorAll(".sw-grab,.sw-top,.rv-top,.faq-top").forEach(h=>{
+    let y0=null,dy=0;
+    h.addEventListener("pointerdown",e=>{if(e.target.closest("button"))return;y0=e.clientY;dy=0;try{h.setPointerCapture(e.pointerId);}catch(x){}p.style.transition="none";});
+    h.addEventListener("pointermove",e=>{if(y0==null)return;dy=e.clientY-y0;p.style.transform="translateY("+Math.max(0,dy)+"px)";});
+    const end=()=>{if(y0==null)return;
+      if(dy>90){p.style.transition="transform .18s ease";p.style.transform="translateY(105%)";setTimeout(()=>{fn();p.style.transition="";p.style.transform="";},180);}
+      else{p.style.transition="transform .2s ease";p.style.transform="";setTimeout(()=>{p.style.transition="";},210);}
+      y0=null;dy=0;};
+    h.addEventListener("pointerup",end);h.addEventListener("pointercancel",end);
+  });
+}
+armSheet("#swipe",()=>closeSwipe());
+armSheet("#reveal",()=>closeReveal());
+armSheet("#faqov",()=>closeFaq());
+
 /* ===== quick-pick swipe mode ===== */
-const SW={list:[],i:0,open:false};
+const SW={list:[],i:0,open:false,peek:false};
 function openSwipe(){
   SW.list=swipeQueue();SW.i=0;
   if(!SW.list.length){toast("All picked \u2014 nothing left \u26a1");return;}
-  SW.open=true;
+  SW.open=true;SW.peek=true;
   document.getElementById("swipe").style.display="flex";
   document.body.style.overflow="hidden";
   document.addEventListener("keydown",swKey);
@@ -2394,11 +2417,12 @@ function renderSwipeCard(){
     confetti();return;
   }
   const win=m.kn?" through":" wins";
-  st.innerHTML='<div class="sw-card" id="sw-card">'+
+  st.innerHTML='<div class="sw-card'+(SW.peek?" peek":"")+'" id="sw-card">'+
     '<div class="sw-tag">'+esc((RLABEL[m.round]||m.round)+" \u00b7 "+fmtDay(m.ko)+" "+fmtTime(m.ko))+'</div>'+
     '<div class="sw-teams"><div class="sw-t">'+m.home.f+'<b>'+esc(m.home.n)+'</b></div><span class="sw-vs">VS</span><div class="sw-t">'+m.away.f+'<b>'+esc(m.away.n)+'</b></div></div></div>'+
     '<div class="sw-glow l" id="sw-gl">'+esc(m.home.n+win)+'</div>'+
     '<div class="sw-glow r" id="sw-gr">'+esc(m.away.n+win)+'</div>';
+  SW.peek=false;
   lg.innerHTML='\u2190 '+esc(m.home.n+win)+' &nbsp;\u00b7&nbsp; \u2191 '+(m.kn?"skip":"draw")+' &nbsp;\u00b7&nbsp; '+esc(m.away.n+win)+' \u2192';
   bt.innerHTML='<button class="sw-b" onclick="swipeCommit(\'H\')">'+esc(m.home.n)+'</button>'+
     (m.kn?'<button class="sw-b dim" onclick="swipeSkip()">skip</button>':'<button class="sw-b" onclick="swipeCommit(\'D\')">Draw</button>')+
@@ -2429,7 +2453,7 @@ function bindSwipeGestures(){
   if(!c||!window.PointerEvent)return;
   let sx=0,sy=0,drag=false;
   const gl=document.getElementById("sw-gl"),gr=document.getElementById("sw-gr");
-  c.addEventListener("pointerdown",e=>{drag=true;sx=e.clientX;sy=e.clientY;try{c.setPointerCapture(e.pointerId);}catch(x){}c.style.transition="none";});
+  c.addEventListener("pointerdown",e=>{drag=true;c.classList.remove("peek");sx=e.clientX;sy=e.clientY;try{c.setPointerCapture(e.pointerId);}catch(x){}c.style.transition="none";});
   c.addEventListener("pointermove",e=>{
     if(!drag)return;
     const dx=e.clientX-sx,dy=e.clientY-sy;
