@@ -271,3 +271,17 @@ writes simply start failing, which is the point) — but keep the gap short.
 **Rollback (DB), if applicable:** none — frontend only.
 
 **kv snapshot taken before overwrite (if applicable):** n/a.
+
+## 2026-06-12 20:35 (Doha)
+**Pushed:** 37352ed (+ this ops commit) — **staging branch only, production main untouched**
+**Changed:** Player avatars switched from the uniform beige monogram to deterministic Komposition badges — one circle, one rotated bar, one gold accent dot, generated from the name/slug with the initial overlaid. Applied centrally to all five avatar sites (leaderboard rows, podium, profile, top chip, rival watch) via a new `avatarFill(name)` helper; `.avatar` CSS now hosts the SVG behind a light initial. Derived per-name — no kv/DB field added, `standings()` and the robot untouched. Frontend only.
+
+**Rollback (git):**
+    git push origin --delete staging        # discard the test branch entirely
+    # or, to keep staging but undo just this change:
+    git revert 37352ed
+    git push https://x-access-token:<TOKEN>@github.com/alemadi/qnb-staff-wc2026.git staging
+
+**Rollback (DB), if applicable:** none — frontend only.
+
+**kv snapshot taken before overwrite (if applicable):** n/a.
