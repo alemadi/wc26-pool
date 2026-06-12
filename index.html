@@ -95,8 +95,10 @@
   .userchip .who b{font-size:12.5px;font-weight:700;max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .userchip .who span{font-size:10px;color:var(--gold);font-weight:700}
   .avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:12.5px;
-    color:#1a0f22;background:linear-gradient(135deg,var(--gold-bright),var(--gold-deep));flex-shrink:0;
-    box-shadow:0 2px 10px rgba(0,0,0,.3),inset 0 0 0 1px rgba(255,255,255,.25)}
+    color:#f7eed8;background:#241c12;flex-shrink:0;position:relative;overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.3),inset 0 0 0 1px rgba(255,255,255,.18)}
+  .avatar .avbg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .avatar .avmono{position:relative;z-index:1;text-shadow:0 1px 2px rgba(0,0,0,.55)}
 
   /* Countdown */
   .countdown{margin-top:16px;display:flex;align-items:center;gap:14px;
@@ -1161,6 +1163,29 @@ let state={view:"matches",meSlug:null,player:null,results:{},kteams:{},org:false
 
 function slug(s){return s.trim().toLowerCase().replace(/[\s"'\/\\]+/g,"-").replace(/-+/g,"-").slice(0,60);}
 function initials(name){const p=name.trim().split(/\s+/);return ((p[0]||"")[0]||"?").toUpperCase()+((p[1]||"")[0]||"").toUpperCase();}
+/* Deterministic Komposition avatar (circle + bar + dot) with initial overlay.
+   Derived from the name/slug — same person always renders the same badge. No DB field. */
+var AV_JEWELS=["#C9A227","#913D4C","#3E7C66","#2F6E78","#4A5491","#B5683C","#6E4C77","#4C6A8A","#B07A6E","#7E8A3C"];
+function avHash(s){var h=5381;for(var i=0;i<s.length;i++){h=((h<<5)+h)+s.charCodeAt(i);h|=0;}return Math.abs(h);}
+function avHx(h){return [1,3,5].map(function(i){return parseInt(h.slice(i,i+2),16);});}
+function avMix(a,b,t){var A=avHx(a),B=avHx(b);return "#"+A.map(function(v,i){var n=Math.round(v+(B[i]-v)*t);return Math.max(0,Math.min(255,n)).toString(16).padStart(2,"0");}).join("");}
+function avTake(pool,h,k){var a=pool.slice(),out=[],x=h>>>0;for(var i=0;i<k;i++){out.push(a.splice(x%a.length,1)[0]);x=((x*2654435761)>>>0)^(x>>>5);if(x===0)x=7919+i;}return out;}
+function avatarFill(name){
+  name=String(name||"");
+  var pk=avTake(AV_JEWELS,avHash(name+"::pal"),4);
+  var bg=avMix(pk[0],"#000000",.42),c1=avMix(pk[1],"#ffffff",.1),c2=avMix(pk[2],"#ffffff",.1),acc="#E8CD7E";
+  var h=avHash(name+"::k1");
+  var cr=16+(h%9),cx=13+((h>>3)%38),cy=13+((h>>7)%38);
+  var bh=9+((h>>10)%7),by=18+((h>>13)%26),rot=(h>>5)%180;
+  var dx=10+((h>>16)%44),dy=10+((h>>19)%44);
+  var svg='<svg class="avbg" viewBox="0 0 64 64" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'
+    +'<rect width="64" height="64" fill="'+bg+'"/>'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+cr+'" fill="'+c1+'"/>'
+    +'<rect x="-12" y="'+by+'" width="88" height="'+bh+'" fill="'+c2+'" transform="rotate('+rot+' 32 '+(by+bh/2)+')"/>'
+    +'<circle cx="'+dx+'" cy="'+dy+'" r="4.5" fill="'+acc+'"/>'
+    +'</svg>';
+  return svg+'<span class="avmono">'+initials(name)+'</span>';
+}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));}
 
 function scoreFor(preds,results,champ){
@@ -1290,7 +1315,7 @@ async function signOut(){
 }
 function updateChip(){
   if(!state.player)return;
-  document.getElementById("chip-av").textContent=initials(state.player.name);
+  document.getElementById("chip-av").innerHTML=avatarFill(state.player.name);
   document.getElementById("chip-name").textContent=state.player.name;
   document.getElementById("chip-pts").textContent=scoreFor(state.player.predictions,state.results,state.player.champ).pts+" PTS";
 }
@@ -1618,7 +1643,7 @@ function moveHTML(d){
   return '<div class="rmove flat">\u2013</div>';
 }
 function lbRowHTML(r,i,PT){
-  return '<div class="lb-row '+(r.me?"me":"")+'" style="animation-delay:'+Math.min(i*0.03,0.5)+'s"><div class="rank">'+r.rank+'</div>'+moveHTML(r.dRank)+'<div class="avatar">'+initials(r.name)+'</div>'+
+  return '<div class="lb-row '+(r.me?"me":"")+'" style="animation-delay:'+Math.min(i*0.03,0.5)+'s"><div class="rank">'+r.rank+'</div>'+moveHTML(r.dRank)+'<div class="avatar">'+avatarFill(r.name)+'</div>'+
     '<div class="lb-info"><div class="n">'+esc(r.name)+(r.me?'<span class="youtag">YOU</span>':'')+(r.rv?'<span class="rivtag">\ud83c\udfaf RIVAL</span>':'')+(r.demo?'<span class="demotag">demo</span>':'')+'</div><div class="d">'+esc(r.dept||"")+'</div>'+
     '<div class="lb-stats"><span>◎ <b>'+r.exact+'</b> exact</span><span>✓ <b>'+r.correct+'</b> correct</span><span>'+r.predicted+'/'+PT+' picked</span></div></div>'+
     '<div class="lb-pts"><b>'+'<span class="ptsn" data-pslug="'+r.slug+'">'+r.pts+'</span>'+'</b><span>pts</span></div></div>';
@@ -1655,7 +1680,7 @@ async function renderLeaderboard(){
   if(rows.length>=3){
     const ord=[rows[1],rows[0],rows[2]],cls=["second","first","third"],med=["🥈","🥇","🥉"];
     html+='<div class="podium">';
-    ord.forEach((r,i)=>{html+='<div class="pod '+cls[i]+'" style="animation-delay:'+(i*0.08)+'s"><div class="medal">'+med[i]+'</div><div class="avatar av">'+initials(r.name)+'</div><div class="pname">'+esc(r.name)+'</div><div class="stand"><div class="ppts">'+r.pts+'<small> PTS</small></div></div></div>';});
+    ord.forEach((r,i)=>{html+='<div class="pod '+cls[i]+'" style="animation-delay:'+(i*0.08)+'s"><div class="medal">'+med[i]+'</div><div class="avatar av">'+avatarFill(r.name)+'</div><div class="pname">'+esc(r.name)+'</div><div class="stand"><div class="ppts">'+r.pts+'<small> PTS</small></div></div></div>';});
     html+='</div>';
   }
   const lim=Math.min(rows.length,LB_SHOWN);
@@ -1697,7 +1722,7 @@ async function renderMe(){
   if(!badges.length)badges.push({g:false,t:"🌱 Getting started"});
   const awaiting=s.scored===0;
   document.getElementById("mecard").innerHTML=
-    '<div class="avatar av">'+initials(state.player.name)+'</div><h3>'+esc(state.player.name)+'</h3>'+
+    '<div class="avatar av">'+avatarFill(state.player.name)+'</div><h3>'+esc(state.player.name)+'</h3>'+
     '<div class="role">'+esc(state.player.dept)+'</div>'+(state.player.ig?'<div class="mail">@'+esc(state.player.ig)+'</div>':'')+
     '<div class="me-stat"><div class="s"><b>'+s.pts+'</b><span>Points</span></div><div class="s"><b>'+(awaiting?"—":("#"+myRank))+'</b><span>Rank'+(total?(" of "+total):"")+'</span></div><div class="s"><b>'+pc+'</b><span>Predicted</span></div></div>'+
     '<div class="me-break">'+(awaiting?'You\u2019ve locked in <b>'+pc+'/'+predTotal()+'</b> picks. Points appear here once matches kick off.':'<b>'+s.correct+'</b> correct results &nbsp;·&nbsp; <b>'+s.exact+'</b> exact scores &nbsp;·&nbsp; <b>'+s.scored+'</b> matches scored')+'</div>'+
@@ -2150,7 +2175,7 @@ async function renderDept(body){
   let html='<div class="dept-note">Ranked by average points per player \u00b7 ties broken by total points</div>';
   deps.forEach((x,i)=>{
     html+='<div class="lb-row" style="animation-delay:'+Math.min(i*0.03,0.4)+'s"><div class="rank">'+(i+1)+'</div>'+
-      '<div class="avatar">'+esc((x.d.replace(/[^A-Za-z ]/g,"").split(/\s+/).map(w=>w[0]||"").join("").slice(0,2).toUpperCase())||"?")+'</div>'+
+      '<div class="avatar">'+avatarFill(x.d)+'</div>'+
       '<div class="lb-info"><div class="n">'+esc(x.d)+'</div><div class="d">'+x.n+' player'+(x.n===1?"":"s")+' \u00b7 \u03a3 '+x.sum+' pts</div></div>'+
       '<div class="lb-pts"><b>'+(Math.round(x.avg*10)/10)+'</b><span>avg</span></div></div>';});
   body.innerHTML=html;
