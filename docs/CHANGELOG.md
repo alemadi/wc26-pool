@@ -375,6 +375,12 @@ writes simply start failing, which is the point) — but keep the gap short.
 
 **Rollback (git):**
     git revert 0b75da8
+## 2026-06-12 22:58 (Doha)
+**Pushed:** 660a7f4 (app) + the changelog commit that follows it
+**Changed:** Fun-stats wave 4: pick twin + hit-rate-vs-office on the Me tab; photo-finish / N-way-tie and still-perfect facts in the leaderboard ticker; top-scorer-of-the-day (👑 when it's you) and office day hit-rate in the reveal finale (line cap 3→4); one gold fun-stat line on the share card (shareFunLine). consensus() gains officeHit, perfectN, dayHit, dayTop, twin. Rebased onto 8d250a4 with the live/locked exact-score hotfix preserved. No new queries; demo mode unaffected; no DB/robot/kv change.
+
+**Rollback (git):**
+    git revert 660a7f4
     git push https://x-access-token:<TOKEN>@github.com/alemadi/qnb-staff-wc2026.git main
 
 **Rollback (DB), if applicable:**
