@@ -259,3 +259,15 @@ writes simply start failing, which is the point) — but keep the gap short.
 **Rollback (DB), if applicable:** none — frontend only.
 
 **kv snapshot taken before overwrite (if applicable):** n/a.
+
+## 2026-06-12 20:24 (Doha)
+**Pushed:** 188bed0, edb82f4, + this ops commit — **to main (production)**
+**Changed:** Promoted the staging chip change to production after owner approval and preview testing (rawcdn.githack pinned to edb82f4). Exact-score chips now follow the result pick; contradictory stored scores are cleared on result switch; custom scores derive the result. Frontend only — no DB/kv change, robot untouched.
+
+**Rollback (git):**
+    git revert edb82f4 188bed0
+    git push https://x-access-token:<TOKEN>@github.com/alemadi/qnb-staff-wc2026.git main
+
+**Rollback (DB), if applicable:** none — frontend only.
+
+**kv snapshot taken before overwrite (if applicable):** n/a.
