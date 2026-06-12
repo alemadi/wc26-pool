@@ -313,3 +313,16 @@ writes simply start failing, which is the point) — but keep the gap short.
 **Rollback (DB), if applicable:** none — frontend only.
 
 **kv snapshot taken before overwrite (if applicable):** n/a.
+
+## 2026-06-12 21:02 (Doha)
+**Pushed:** 37352ed, 7c8a488, 1c404df (+ staging ops commits 462078f, eb235df, f96f260, + this ops commit) — **to main (production)**
+**Changed:** Promoted the avatar overhaul from staging after owner go-ahead. People avatars (leaderboard rows, podium, profile, top chip) are deterministic Komposition badges (circle + bar + gold dot, jewel palette, initial overlaid). Department rows render rounded-square plaques carrying a pictogram of each department's function (bank/shield/megaphone/building/people/chip/chart/coins/gear/gem/scales; legacy values mapped; group-of-people fallback). Frontend only — no kv/DB change, robot untouched.
+**§8 gate:** automated headless walk (Playwright/Chromium against the live backend): fresh boot, returning-player boot (real slug, read-only), People↔Departments both directions, demo on/off, Me view, share fallback, rival picker populate — 11/11 passed, zero console errors both sessions. Pick-save and rival-commit not exercised (would write production kv); those code paths are untouched by these commits.
+
+**Rollback (git):**
+    git revert 1c404df 7c8a488 37352ed
+    git push https://x-access-token:<TOKEN>@github.com/alemadi/qnb-staff-wc2026.git main
+
+**Rollback (DB), if applicable:** none — frontend only.
+
+**kv snapshot taken before overwrite (if applicable):** n/a.
