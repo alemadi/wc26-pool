@@ -340,3 +340,17 @@ writes simply start failing, which is the point) — but keep the gap short.
 
 **kv snapshot taken before overwrite (if applicable):**
     N/A — no kv key was written.
+
+## 2026-06-12 22:09 (Doha)
+**Pushed:** 8d250a4, 0aa75c4
+**Changed:** Live and locked group-match cards now show the player's exact score pick, e.g. "LIVE · Picked: Canada (2–1)". Previously the (h–a) was only shown after full time. One-line change in matchCard() in index.html. No DB change.
+
+**Rollback (git):**
+    git revert 8d250a4
+    git push https://x-access-token:<TOKEN>@github.com/alemadi/qnb-staff-wc2026.git main
+
+**Rollback (DB), if applicable:**
+    none — frontend only
+
+**kv snapshot taken before overwrite (if applicable):**
+    n/a
