@@ -299,3 +299,17 @@ writes simply start failing, which is the point) — but keep the gap short.
 **Rollback (DB), if applicable:** none — frontend only.
 
 **kv snapshot taken before overwrite (if applicable):** n/a.
+
+## 2026-06-12 20:52 (Doha)
+**Pushed:** 1c404df (+ this ops commit) — **staging branch only, production main untouched**
+**Changed:** Department badges now show a pictogram of the function each department serves (keyword-matched in new `DEPT_ICONS`/`deptIconKey`): Retail Banking → bank, Group Risk → shield, Group Communications → megaphone, Corporate & Institutional Banking → building, Group Human Capital → people, Group Information Technology → chip, Group Treasury → chart, Group Finance → coins, Group Operations → gear, Asset & Wealth Management → gem, Group Compliance → scales; legacy/demo values mapped (Internal Comms → paper plane, VML/agency → bulb, Executive Office → star); Other/unknown → group-of-people fallback. Rounded-square jewel plaque retained; initials removed from dept badges. Supersedes the 20:45 abstract-plaque visual. Frontend only — no kv/DB change, robot untouched.
+
+**Rollback (git):**
+    git push origin --delete staging        # discard the test branch entirely
+    # or, to return to the abstract plaque version:
+    git revert 1c404df
+    git push https://x-access-token:<TOKEN>@github.com/alemadi/qnb-staff-wc2026.git staging
+
+**Rollback (DB), if applicable:** none — frontend only.
+
+**kv snapshot taken before overwrite (if applicable):** n/a.
