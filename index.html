@@ -258,9 +258,14 @@
   /* completed-match treatment: receipt cards + collapsed archive rows */
   .match-card.done .result-line{border-top:1px dashed var(--line);padding-top:10px}
   .match-card.done{border-color:rgba(244,238,227,.08)}
-  .archive{margin-top:18px}
-  .arch-head{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--faint);font-weight:800;margin:14px 2px 8px;display:flex;align-items:center;gap:8px}
-  .arch-head::after{content:"";flex:1;height:1px;background:var(--line)}
+  .archive{margin-top:2px;margin-bottom:6px}
+  .arch-fold{display:flex;align-items:center;gap:9px;cursor:pointer;padding:6px 2px;margin-bottom:2px;user-select:none}
+  .arch-fold .caret{font-size:11px;color:var(--gold);width:12px;flex:none}
+  .arch-fold-t{font-family:var(--font-d);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--cream)}
+  .arch-fold .arch-count{font-size:10px;font-weight:800;color:var(--ink);background:var(--gold);border-radius:20px;padding:1px 7px;letter-spacing:.5px;flex:none}
+  .arch-fold .ln{flex:1;height:1px;background:var(--line)}
+  .arch-fold:active{opacity:.7}
+  .arch-head{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--faint);font-weight:800;margin:14px 2px 8px}
   .thin{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin-bottom:7px;font-size:12px;cursor:pointer;animation:rise .4s both}
   .thin:active{background:rgba(255,255,255,.06)}
   .thin.qatar{border-color:rgba(138,21,56,.45)}
@@ -1507,7 +1512,26 @@ function renderMatches(){
     if(matchFinished(m)&&dayKey(m.ko)<todayK){arch.push(m);return;}
     const k=dayKey(m.ko);if(!groups[k]){groups[k]=[];order.push(k);}groups[k].push(m);
   });
-  let html="",idx=0;
+  let html="",idx=0,archHtml="";
+  if(arch.length){
+    const ag={},aord=[];
+    arch.forEach(m=>{const k=dayKey(m.ko);if(!ag[k]){ag[k]=[];aord.push(k);}ag[k].push(m);});
+    const open=ARCH_OPEN;
+    archHtml+='<div class="archive'+(open?" open":"")+'">';
+    archHtml+='<div class="arch-fold" data-archfold role="button" tabindex="0" aria-expanded="'+open+'"><span class="caret">'+(open?'\u25be':'\u25b8')+'</span><span class="arch-fold-t">Completed</span><span class="arch-count">'+arch.length+'</span><span class="ln"></span></div>';
+    if(open){
+      aord.forEach(k=>{
+        archHtml+='<div class="arch-head">'+fmtDay(ag[k][0].ko)+'</div>';
+        ag[k].forEach(m=>{
+          const v=fxView(m);
+          if(ARCH_EXP.has(m.id)){
+            archHtml+=(m.kn?koMatchCard(v,idx++):matchCard(v,idx++))+'<div class="arch-toggle" data-archless="'+m.id+'">Show less \u25b4</div>';
+          }else archHtml+=thinRow(v,idx++);
+        });
+      });
+    }
+    archHtml+='</div>';
+  }
   if(soon.length){
     html+='<div class="daygroup"><div class="dayhdr soonhdr"><span class="dot soon"></span><h3>\u23f3 Locking soon \u2014 pick now</h3><span class="ln"></span></div>';
     soon.forEach(m=>{const v=fxView(m);html+=m.kn?(koReady(m)?koMatchCard(v,idx++):knockoutCard(v,idx++)):matchCard(v,idx++);});
@@ -1518,22 +1542,7 @@ function renderMatches(){
     groups[k].forEach(m=>{const v=fxView(m);html+=m.kn?(koReady(m)?koMatchCard(v,idx++):knockoutCard(v,idx++)):matchCard(v,idx++);});
     html+='</div>';
   });
-  if(arch.length){
-    const ag={},aord=[];
-    arch.forEach(m=>{const k=dayKey(m.ko);if(!ag[k]){ag[k]=[];aord.push(k);}ag[k].push(m);});
-    html+='<div class="archive">';
-    aord.forEach(k=>{
-      html+='<div class="arch-head">Completed · '+fmtDay(ag[k][0].ko)+'</div>';
-      ag[k].forEach(m=>{
-        const v=fxView(m);
-        if(ARCH_EXP.has(m.id)){
-          html+=(m.kn?koMatchCard(v,idx++):matchCard(v,idx++))+'<div class="arch-toggle" data-archless="'+m.id+'">Show less \u25b4</div>';
-        }else html+=thinRow(v,idx++);
-      });
-    });
-    html+='</div>';
-  }
-  host.innerHTML=html;
+  host.innerHTML=archHtml+html;
   bindMatchEvents();
   updateJump();
   renderDayBanner();
@@ -1541,6 +1550,7 @@ function renderMatches(){
 }
 
 const ARCH_EXP=new Set();
+let ARCH_OPEN=false;
 function matchFinished(m){const r=state.results[m.id];return m.kn?!!(r&&r.w):!!r;}
 function gScorePts(p,res){
   if(!p||!p.o||!res)return 0;
@@ -1678,6 +1688,12 @@ function chipPick(id,h,a){
   queueSave();
 }
 function bindMatchEvents(){
+  const fold=document.querySelector("[data-archfold]");
+  if(fold){
+    const t=()=>{ARCH_OPEN=!ARCH_OPEN;renderMatches();};
+    fold.addEventListener("click",t);
+    fold.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();t();}});
+  }
   document.querySelectorAll(".thin[data-arch]").forEach(el=>{
     const open=()=>{ARCH_EXP.add(el.dataset.arch);renderMatches();};
     el.addEventListener("click",open);
