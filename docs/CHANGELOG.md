@@ -5,6 +5,28 @@ Rollback steps are exact and executable: git commands, plus inverse SQL for any 
 
 ---
 
+## 2026-06-14 12:23 (Doha) — Partner Offers: new in-app section for the WC26 staff perks
+
+**Commits:** _(this commit)_ — frontend only, `index.html` + this changelog.
+
+**What changed** (frontend only, `index.html`):
+- New **Partner Offers** view (`#view-offers`) + a 5th bottom-nav tab ("Offers", price-tag icon, between Leaderboard and Watch). Public — no sign-in needed (like the leaderboard); `go('offers')` is not gated.
+- Renders the 52 Staff Challenge partner offers from the supplied list (`FIFA_WC_26_Offers_List_1.xlsx`) as a responsive card grid. Each card: category icon + label, partner name, source hint (📸 Instagram / 🌐 Website), and a "View offer →" link opening the partner page in a new tab (`target="_blank" rel="noopener noreferrer"`).
+- Category filter chips (reusing the existing `.filters`/`.chip` bar) with live counts — **All 52 · Hotels 44 · Restaurants 5 · Shopping 1 · Others 2** — plus a name search box. The "All" view groups cards under category sub-headers; filtered/search views show a flat A–Z grid. Empty-state when a search matches nothing.
+- Categories normalized (the sheet mixed "Hotel"/"Hotels"). Data is a static `OFFERS` array; all names/URLs escaped via the existing `esc()`. Footer gains a "Partner offers" link.
+- Verified headless (node DOM stub): 52 offers, no invalid/duplicate rows, correct per-category counts, group headers only in All view, search + empty-state + ampersand/href escaping + IG-vs-web source detection all pass; full inline script passes `node --check`.
+
+**DB:** none. No kv writes, no SQL, `wc:results` untouched. Read-only static content.
+
+**Rollback (git):**
+
+    git revert <this commit>
+    git push https://x-access-token:<TOKEN>@github.com/alemadi/qnb-staff-wc2026.git claude/affectionate-hamilton-ib2c8u
+
+**Rollback (DB):** n/a.
+
+---
+
 ## 2026-06-13 04:55 (Doha) — Fix: robot couldn't confirm m3 (ESPN name "Bosnia-Herzegovina" unaliased)
 
 **Commits:** `8d8802f` (sql/robot.sql + changelog) and a follow-up SHA-correction commit (this one).

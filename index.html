@@ -603,6 +603,25 @@
   .me-fun{margin:14px auto 2px;font-size:11.5px;color:var(--muted);font-weight:700;line-height:2;letter-spacing:.2px}
   .me-fun b{color:var(--gold)}
   .me-fun .fl-img{width:15px;height:11px;border-radius:2px;vertical-align:-1px}
+  /* ===== Partner offers ===== */
+  .of-intro{font-size:12.5px;color:var(--muted);line-height:1.6;margin:0 2px 10px}
+  .of-search{margin:0 0 2px}
+  .of-search .input{width:100%}
+  .of-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:11px;margin-top:14px}
+  .of-ghd{grid-column:1/-1;font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);font-weight:800;margin:12px 2px -2px;display:flex;align-items:center;gap:8px}
+  .of-ghd:first-child{margin-top:0}
+  .of-ghd small{color:var(--faint);font-weight:700;letter-spacing:1px}
+  .of-card{display:flex;flex-direction:column;gap:9px;text-decoration:none;color:var(--cream);background:#0c0c10;border:1px solid var(--line);border-radius:16px;padding:13px 13px 11px;transition:border-color .2s,transform .2s,box-shadow .2s}
+  @media(hover:hover){.of-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 12px 30px -12px rgba(180,151,89,.5)}.of-card:hover .of-go{color:var(--gold-bright)}}
+  .of-card:active{transform:translateY(0)}
+  .of-top{display:flex;align-items:center;gap:8px}
+  .of-ic{width:32px;height:32px;flex-shrink:0;display:grid;place-items:center;font-size:17px;border-radius:9px;background:var(--glass);border:1px solid var(--line)}
+  .of-cat{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .of-name{font-weight:800;font-size:14px;line-height:1.25;flex:1}
+  .of-cta{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:auto;padding-top:9px;border-top:1px solid var(--line-2)}
+  .of-src{font-size:10px;font-weight:700;color:var(--faint);display:inline-flex;align-items:center;gap:4px}
+  .of-go{font-size:11px;font-weight:800;color:var(--gold);white-space:nowrap}
+  @media(max-width:360px){.of-grid{grid-template-columns:1fr 1fr;gap:9px}.of-name{font-size:13px}.of-card{padding:11px}}
 </style>
 </head>
 <body>
@@ -788,15 +807,25 @@
     </div>
   </section>
 
+  <!-- OFFERS -->
+  <section class="view" id="view-offers">
+    <div class="sec-title"><h2>Partner Offers</h2><div class="tag" id="of-count"></div></div>
+    <p class="of-intro">Exclusive Staff Challenge perks across Doha for the 2026 World Cup &mdash; hotels, dining, shopping and more. Tap a partner to open their offer.</p>
+    <div class="of-search"><input class="input" id="of-search" type="search" inputmode="search" autocomplete="off" placeholder="🔎 Search partners…" oninput="offerSearch(this.value)" aria-label="Search partner offers" /></div>
+    <div class="filters" id="of-filters"></div>
+    <div id="of-list"></div>
+  </section>
+
   <footer class="app">
     <b>QNB Staff WC2026</b> — staff World Cup pool · free to enter · no buy-ins, ever<br>
-    Kickoff times shown in Qatar time (AST · UTC+3). All 104 fixtures · 2026 FIFA World Cup. · <a href="watch.html" style="color:var(--gold);text-decoration:none">Where to watch in Doha</a>
+    Kickoff times shown in Qatar time (AST · UTC+3). All 104 fixtures · 2026 FIFA World Cup. · <a href="watch.html" style="color:var(--gold);text-decoration:none">Where to watch in Doha</a> · <a href="#offers" onclick="go('offers');return false;" style="color:var(--gold);text-decoration:none">Partner offers</a>
   </footer>
 </div>
 
 <nav class="bottom">
   <button class="navbtn on" id="nav-matches" onclick="go('matches')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4M7 7l2.5 2.5M17 7l-2.5 2.5M7 17l2.5-2.5M17 17l-2.5-2.5"/></svg>Matches</button>
   <button class="navbtn" id="nav-leaderboard" onclick="go('leaderboard')"><svg viewBox="0 0 24 24"><path d="M6 9V4h12v5a6 6 0 0 1-12 0Z"/><path d="M6 5H3v2a3 3 0 0 0 3 3M18 5h3v2a3 3 0 0 1-3 3M9 21h6M12 15v6"/></svg>Leaderboard</button>
+  <button class="navbtn" id="nav-offers" onclick="go('offers')"><svg viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"><path d="M3 11.4V6a3 3 0 0 1 3-3h5.4a2 2 0 0 1 1.4.6l7.2 7.2a2 2 0 0 1 0 2.8l-5.6 5.6a2 2 0 0 1-2.8 0L3.6 12.8a2 2 0 0 1-.6-1.4Z"/><circle cx="8" cy="8" r="1.3"/></svg>Offers</button>
   <a class="navbtn" href="/watch.html" style="text-decoration:none"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Watch</a>
   <button class="navbtn" id="nav-me" onclick="go('me')"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>Me</button>
 </nav>
@@ -1307,9 +1336,10 @@ function showView(view){
   document.body.classList.toggle("in",!!state.player);
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
   const el=document.getElementById("view-"+view);if(el)el.classList.add("active");
-  ["matches","leaderboard","me"].forEach(n=>{const b=document.getElementById("nav-"+n);if(b)b.classList.toggle("on",n===view);});
+  ["matches","leaderboard","offers","me"].forEach(n=>{const b=document.getElementById("nav-"+n);if(b)b.classList.toggle("on",n===view);});
   if(view==="matches"){renderFilters();renderMatches();}
   if(view==="leaderboard")renderLeaderboard();
+  if(view==="offers")renderOffers();
   if(view==="me"){renderMe();showOrg();}
   if(view==="join")rollBoard();
   window.scrollTo({top:0,behavior:"smooth"});
@@ -1448,6 +1478,100 @@ function fixturesFor(filter){
     if(filter==="all")return true;
     return m.round===filter;
   });
+}
+
+/* ===== Partner offers ===== */
+/* Static partner list (Staff Challenge WC26 perks). Read-only; no DB/kv — pure
+   frontend content. Categories normalized to Hotels/Restaurants/Shopping/Others. */
+const OFFER_ICON={Hotels:"🏨",Restaurants:"🍽️",Shopping:"🛍️",Others:"🎁"};
+const OFFER_ORDER={Hotels:0,Restaurants:1,Shopping:2,Others:3};
+const OFFER_CATS=[["all","All","✦"],["Hotels","Hotels",OFFER_ICON.Hotels],["Restaurants","Restaurants",OFFER_ICON.Restaurants],["Shopping","Shopping",OFFER_ICON.Shopping],["Others","Others",OFFER_ICON.Others]];
+const OFFERS=[
+  {name:"Centro Capital Rotana",cat:"Hotels",url:"https://www.instagram.com/centrocdoha?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"Sedra Arjan by Rotana",cat:"Hotels",url:"https://www.rotana.com/arjaanhotelapartments/qatar/doha/sedraarjaanbyrotana"},
+  {name:"Le Royal Meridien Doha",cat:"Hotels",url:"https://www.instagram.com/reel/DZScMB-GL-J/"},
+  {name:"Retaj Al Rayyan Hotel",cat:"Hotels",url:"https://www.instagram.com/retajalrayyan.westbay?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"InterContinental Doha Beach & Spa",cat:"Hotels",url:"https://www.instagram.com/p/DZaY2aAiP48/"},
+  {name:"Arabesque",cat:"Restaurants",url:"https://www.instagram.com/p/DZZ2GrwAkBJ/"},
+  {name:"Burger and Lobster",cat:"Restaurants",url:"https://www.instagram.com/p/DZZ0djMjVr5/?img_index=1"},
+  {name:"Burj Al Hamam",cat:"Restaurants",url:"https://www.instagram.com/reel/DZcQ-yXM6mx/"},
+  {name:"Isla",cat:"Restaurants",url:"https://www.instagram.com/p/DZZwYuJjFNc/"},
+  {name:"Spontini",cat:"Restaurants",url:"https://www.instagram.com/p/DZZ3IklDTTZ/"},
+  {name:"Mall Of Qatar",cat:"Shopping",url:"https://www.instagram.com/p/DZcBr9QMe5-/"},
+  {name:"Al Maha Services",cat:"Others",url:"https://www.instagram.com/p/DZaezriNhEj/"},
+  {name:"Aleph Doha Residences",cat:"Hotels",url:"https://www.instagram.com/reel/DZZ5WGMIhzZ/"},
+  {name:"Fraser Suites",cat:"Hotels",url:"https://www.instagram.com/reel/DZaFs5MqndM/"},
+  {name:"DoubleTree by Hilton Al Sadd",cat:"Hotels",url:"https://www.instagram.com/reel/DZbs9R2KC3r/"},
+  {name:"Element City Center Doha",cat:"Hotels",url:"https://www.instagram.com/reel/DZcIC2BFA1R/"},
+  {name:"Holiday Villa",cat:"Hotels",url:"https://www.instagram.com/p/DZaemW-sTWx/"},
+  {name:"Hyatt Regency Oryx Doha",cat:"Hotels",url:"https://www.instagram.com/p/DZaTfmZjHVS/"},
+  {name:"La Cigale Hotel",cat:"Hotels",url:"https://www.instagram.com/p/DZaN0vcARU3/"},
+  {name:"Fairmont Doha Hotel",cat:"Hotels",url:"https://www.instagram.com/reel/DZZfvmmMLaI/"},
+  {name:"Raffles Doha",cat:"Hotels",url:"https://www.instagram.com/reel/DZZfgKpNUin/"},
+  {name:"Swissotel Doha",cat:"Hotels",url:"https://www.instagram.com/reel/DZU6sfVsqYe/"},
+  {name:"The St. Regis Doha",cat:"Hotels",url:"https://www.instagram.com/reel/DZNxZRctf2S/"},
+  {name:"W Doha",cat:"Hotels",url:"https://www.instagram.com/p/DZcCiiLjJtZ/"},
+  {name:"BeIN",cat:"Others",url:"https://www.bein.com/en/worldcup2026/?utm_source=beinsports-programmatic&utm_medium=splash&utm_campaign=26FIFAWorldCup&ctc=26FIFAWorldCup&source=47"},
+  {name:"Rosewood Doha",cat:"Hotels",url:"https://www.instagram.com/rosewooddoha/?hl=en"},
+  {name:"Adagio Doha Hotel Apartments",cat:"Hotels",url:"https://www.instagram.com/adagiodoha/"},
+  {name:"Best Western Plus Hotel",cat:"Hotels",url:"https://www.instagram.com/bwpdoha/?hl=en"},
+  {name:"Banyan Tree",cat:"Hotels",url:"https://www.instagram.com/reel/DZaIKDHIb2z/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA=="},
+  {name:"Central Inn Souq Waqif",cat:"Hotels",url:"https://www.instagram.com/p/DZU6nfWl9qf/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA=="},
+  {name:"Delta Hotels Doha",cat:"Hotels",url:"https://www.instagram.com/deltahotelsdoha?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"Grand Regal Hotel",cat:"Hotels",url:"https://www.instagram.com/grandregalqa?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"Grand Regency Doha by Wyndham",cat:"Hotels",url:"https://www.instagram.com/grandregencydoha?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"Hilton Doha",cat:"Hotels",url:"https://www.instagram.com/hiltondohahotel?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"Holiday Inn Doha The Business Park",cat:"Hotels",url:"https://www.ihg.com/holidayinn/hotels/gb/en/doha/dohbp/hoteldetail?cm_mmc=GoogleMaps-_-HI-_-QA-_-DOHBP"},
+  {name:"Imperial Suites Doha",cat:"Hotels",url:"https://www.instagram.com/imperialsuitesqatar/"},
+  {name:"InterContinental Doha The City",cat:"Hotels",url:"https://www.instagram.com/icdohathecity/?hl=en"},
+  {name:"Kempinski Residences & Suites Doha",cat:"Hotels",url:"https://www.instagram.com/kempinskiresidencesdoha/?hl=en"},
+  {name:"Marriott Marquis City Center",cat:"Hotels",url:"https://www.instagram.com/marriottmarquisdoha?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"Marsa Malaz Kempinski, The Pearl",cat:"Hotels",url:"https://www.instagram.com/marsamalazkempinskidoha?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"Mondrian Doha",cat:"Hotels",url:"https://www.instagram.com/mondrian_doha?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"Movenpick Hotel Doha",cat:"Hotels",url:"https://www.instagram.com/movenpickhoteldoha/?hl=en"},
+  {name:"Pullman Doha West Bay",cat:"Hotels",url:"https://www.instagram.com/pullmandoha/?utm_source=ig_web_button_share_sheet"},
+  {name:"Dusit Hotel",cat:"Hotels",url:"https://www.instagram.com/dusitsuitesdoha?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"Ramada Encore Hotel",cat:"Hotels",url:"https://www.instagram.com/ramada_encore_doha?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"Saraya Corniche Hotel",cat:"Hotels",url:"https://www.instagram.com/sarayacorniche?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"The Grand Lux Hotel",cat:"Hotels",url:"https://www.instagram.com/thegrandluxhotel?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"The Royal Riviera Hotel",cat:"Hotels",url:"https://www.instagram.com/theroyalrivierahotel.doha?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"Time Rako Hotel",cat:"Hotels",url:"https://www.instagram.com/timerakohotel?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"Waldorf Astoria Doha Lusail",cat:"Hotels",url:"https://www.instagram.com/waldorfastoriadohalusail?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"Waldorf Astoria West Bay",cat:"Hotels",url:"https://www.instagram.com/waldorfwestbay?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="},
+  {name:"City Center Rotana Doha",cat:"Hotels",url:"https://www.instagram.com/ccrotanadoha?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="}
+];
+let OF={cat:"all",q:""};
+function offerIsIG(u){return /instagram\.com/i.test(u);}
+function offerSrc(u){return offerIsIG(u)?"Instagram":"Website";}
+function offerSrcIc(u){return offerIsIG(u)?"📸":"🌐";}
+function setOfferCat(c){OF.cat=c;renderOffers();}
+function offerSearch(v){OF.q=v;renderOffers();}
+function offerCard(o){
+  return '<a class="of-card" href="'+esc(o.url)+'" target="_blank" rel="noopener noreferrer">'
+    +'<div class="of-top"><span class="of-ic" aria-hidden="true">'+(OFFER_ICON[o.cat]||"🎁")+'</span><span class="of-cat">'+esc(o.cat)+'</span></div>'
+    +'<div class="of-name">'+esc(o.name)+'</div>'
+    +'<div class="of-cta"><span class="of-src">'+offerSrcIc(o.url)+' '+offerSrc(o.url)+'</span><span class="of-go">View offer →</span></div></a>';
+}
+function renderOffers(){
+  const fbar=document.getElementById("of-filters");if(!fbar)return;
+  const q=(OF.q||"").trim().toLowerCase();
+  const catCount=c=>c==="all"?OFFERS.length:OFFERS.filter(o=>o.cat===c).length;
+  fbar.innerHTML=OFFER_CATS.filter(c=>c[0]==="all"||catCount(c[0])).map(c=>
+    '<button class="chip '+(OF.cat===c[0]?"on":"")+'" onclick="setOfferCat(\''+c[0]+'\')">'+c[2]+' '+c[1]+' '+catCount(c[0])+'</button>'
+  ).join("");
+  let list=OFFERS.filter(o=>(OF.cat==="all"||o.cat===OF.cat)&&(!q||o.name.toLowerCase().indexOf(q)>=0));
+  const cnt=document.getElementById("of-count");if(cnt)cnt.textContent=list.length+" offer"+(list.length===1?"":"s");
+  const host=document.getElementById("of-list");if(!host)return;
+  if(!list.length){host.innerHTML='<div class="empty"><div class="ic">🔎</div><b>No partners found</b><span>Try a different search term or category.</span></div>';return;}
+  list=list.slice().sort((a,b)=>(OF.cat==="all"?(OFFER_ORDER[a.cat]-OFFER_ORDER[b.cat]):0)||a.name.localeCompare(b.name));
+  let html='<div class="of-grid">';
+  if(OF.cat==="all"&&!q){
+    ["Hotels","Restaurants","Shopping","Others"].forEach(g=>{
+      const gi=list.filter(o=>o.cat===g);if(!gi.length)return;
+      html+='<div class="of-ghd">'+OFFER_ICON[g]+' '+g+' <small>'+gi.length+'</small></div>'+gi.map(offerCard).join("");
+    });
+  }else{html+=list.map(offerCard).join("");}
+  html+='</div>';host.innerHTML=html;
 }
 
 const CHAMP_LOCK_LABEL="Thu 18 Jun · 7:00 PM";
