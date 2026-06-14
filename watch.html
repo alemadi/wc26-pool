@@ -341,50 +341,6 @@
     <path fill="url(#wcband)" d="M0,12 L0,3 L33,12 L66,3 L99,12 L132,3 L165,12 L198,3 L231,12 L264,3 L297,12 L330,3 L363,12 L396,3 L429,12 L462,3 L495,12 L528,3 L561,12 L594,3 L627,12 L660,3 L693,12 L726,3 L759,12 L792,3 L825,12 L858,3 L891,12 L924,3 L957,12 L990,3 L1023,12 L1056,3 L1089,12 L1122,3 L1155,12 L1188,3 L1200,6 L1200,12 Z"/>
   </svg>
 
-  <!-- ================= QATAR FIXTURES ================= -->
-  <section id="qatar">
-    <div class="sec-head">
-      <svg class="flag" viewBox="0 0 30 12" aria-hidden="true">
-        <rect width="30" height="12" fill="#8A1538"/>
-        <path d="M0,0 H8 L11,1.33 L8,2.67 L11,4 L8,5.33 L11,6.67 L8,8 L11,9.33 L8,10.67 L11,12 H0 Z" fill="#FFFFFF"/>
-      </svg>
-      <h2>Qatar at the World Cup</h2>
-    </div>
-    <p class="sec-sub">Group B · all kickoff times shown in <b>Doha time (AST)</b>.</p>
-
-    <div class="matches">
-      <article class="match" id="m1">
-        <div class="pill"><span class="dot"></span><span class="pill-txt">Matchday 1</span></div>
-        <div class="opp">vs Switzerland</div>
-        <div class="meta">Sat 13 June · Levi's Stadium, Santa Clara</div>
-        <div class="ko"><b>10:00 PM</b><small>Doha</small></div>
-        <a class="remind" target="_blank" rel="noopener" href="https://www.google.com/calendar/render?action=TEMPLATE&text=Qatar%20v%20Switzerland%20%E2%80%93%20World%20Cup%202026&dates=20260613T190000Z/20260613T210000Z&details=Group%20B%20%C2%B7%20Levi%27s%20Stadium%2C%20Santa%20Clara%20%C2%B7%2010%3A00%20PM%20Doha%20time%20%C2%B7%20beIN%20SPORTS&location=Doha%2C%20Qatar">+ Add reminder</a>
-      </article>
-
-      <article class="match" id="m2">
-        <div class="pill"><span class="dot"></span><span class="pill-txt">Matchday 2</span></div>
-        <div class="opp">vs Canada</div>
-        <div class="meta">Thu 18 June (night) · BC Place, Vancouver</div>
-        <div class="ko"><b>1:00 AM</b><small>Fri · Doha</small></div>
-        <a class="remind" target="_blank" rel="noopener" href="https://www.google.com/calendar/render?action=TEMPLATE&text=Canada%20v%20Qatar%20%E2%80%93%20World%20Cup%202026&dates=20260618T220000Z/20260619T000000Z&details=Group%20B%20%C2%B7%20BC%20Place%2C%20Vancouver%20%C2%B7%201%3A00%20AM%20Doha%20time%20(Thu%20night)%20%C2%B7%20beIN%20SPORTS&location=Doha%2C%20Qatar">+ Add reminder</a>
-      </article>
-
-      <article class="match" id="m3">
-        <div class="pill"><span class="dot"></span><span class="pill-txt">Matchday 3</span></div>
-        <div class="opp">vs Bosnia &amp; Herzegovina</div>
-        <div class="meta">Wed 24 June · Lumen Field, Seattle</div>
-        <div class="ko"><b>10:00 PM</b><small>Doha</small></div>
-        <a class="remind" target="_blank" rel="noopener" href="https://www.google.com/calendar/render?action=TEMPLATE&text=Bosnia%20%26%20Herzegovina%20v%20Qatar%20%E2%80%93%20World%20Cup%202026&dates=20260624T190000Z/20260624T210000Z&details=Group%20B%20%C2%B7%20Lumen%20Field%2C%20Seattle%20%C2%B7%2010%3A00%20PM%20Doha%20time%20%C2%B7%20beIN%20SPORTS&location=Doha%2C%20Qatar">+ Add reminder</a>
-      </article>
-    </div>
-
-    <p class="group-note" id="qatarNote">
-      Group B: Qatar, Switzerland, Canada, Bosnia &amp; Herzegovina. Top two advance to the Round of 32 —
-      and with the new 48-team format, a strong third place can sneak through too.
-    </p>
-  </section>
-
-  
   <!-- ================= YOUR TEAMS · REMINDERS ================= -->
   <section id="myteams">
     <div class="sec-head">
@@ -557,54 +513,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
 <script>
-/* ============================================================
-   1) QATAR MATCH STATUS — auto-highlights the next/live match.
-   Kickoffs are fixed UTC instants, so this works on any device
-   timezone. durMin ≈ match window incl. stoppage.
-============================================================ */
-const MATCHES = [
-  { id: "m1", start: "2026-06-13T19:00:00Z", durMin: 125 },
-  { id: "m2", start: "2026-06-18T22:00:00Z", durMin: 125 },
-  { id: "m3", start: "2026-06-24T19:00:00Z", durMin: 125 }
-];
 
-function paintMatches(){
-  const now = Date.now();
-  let nextId = null, nextStart = Infinity, allDone = true;
-
-  MATCHES.forEach(m => {
-    const el = document.getElementById(m.id);
-    if(!el) return;
-    const start = Date.parse(m.start);
-    const end = start + m.durMin * 60000;
-    const pill = el.querySelector(".pill-txt");
-    el.classList.remove("next","live","done");
-
-    if(now >= start && now <= end){
-      el.classList.add("live");
-      pill.textContent = "Live now";
-      allDone = false;
-    } else if(now > end){
-      el.classList.add("done");
-      pill.textContent = "Full time";
-    } else {
-      allDone = false;
-      if(start < nextStart){ nextStart = start; nextId = m.id; }
-    }
-  });
-
-  if(nextId){
-    const el = document.getElementById(nextId);
-    el.classList.add("next");
-    el.querySelector(".pill-txt").textContent = "Up next";
-  }
-  if(allDone){
-    document.getElementById("qatarNote").textContent =
-      "Group stage complete — knockout fixtures and times are on beIN SPORTS and the Predictor app.";
-  }
-}
-paintMatches();
-setInterval(paintMatches, 60000);
 
 /* ============================================================
    2) VENUES — names + coordinates (geocoded via Google Places,
@@ -1039,8 +948,10 @@ function renderPicker(){
 }
 
 function renderMatches(){
-  var list = myMatches();
-  cnt.innerHTML = '<b>'+sel.size+'</b> team'+(sel.size===1?'':'s')+' · <b>'+list.length+'</b> upcoming match'+(list.length===1?'':'es');
+  var now = Date.now();
+  var list = myMatches();                                   // live + upcoming, sorted by kickoff
+  var ahead = list.filter(function(m){ return Date.parse(m.ko) > now; });
+  cnt.innerHTML = '<b>'+sel.size+'</b> team'+(sel.size===1?'':'s')+' · <b>'+list.length+'</b> match'+(list.length===1?'':'es')+' ahead';
   if(!sel.size){
     grid.innerHTML=''; addAll.style.display='none';
     note.textContent='Pick one or more teams above to see their matches and set reminders.';
@@ -1051,17 +962,28 @@ function renderMatches(){
     note.textContent='No upcoming group-stage matches for your teams. Knockout fixtures (from 28 June) appear here once both teams are confirmed.';
     return;
   }
-  addAll.style.display='';
+  addAll.style.display = ahead.length ? '' : 'none';
+  /* soonest upcoming (not yet live) gets the "Up next" highlight */
+  var nextId=null, nextStart=Infinity;
+  list.forEach(function(m){ var s=Date.parse(m.ko); if(s>now && s<nextStart){ nextStart=s; nextId=m.id; } });
   grid.innerHTML = list.map(function(m){
-    return '<article class="match">'+
-      '<div class="pill"><span class="dot"></span><span>'+(RLAB[m.round]||m.round)+'</span></div>'+
+    var s=Date.parse(m.ko), end=s+125*60000;
+    var live = now>=s && now<=end;
+    var isNext = m.id===nextId;
+    var cls = 'match'+(live?' live':(isNext?' next':''));
+    var status = live ? 'Live now' : (isNext ? 'Up next' : (RLAB[m.round]||m.round));
+    var acts = (s>now)
+      ? '<div class="acts">'+
+          '<button type="button" class="remind-btn" data-id="'+m.id+'">⏰ Remind me</button>'+
+          '<a class="gcal" target="_blank" rel="noopener" href="'+gcalURL(m)+'">Google Calendar ↗</a>'+
+        '</div>'
+      : '';
+    return '<article class="'+cls+'">'+
+      '<div class="pill"><span class="dot"></span><span>'+status+'</span></div>'+
       '<div class="opp">'+side(m.home)+' <span class="vs">v</span> '+side(m.away)+'</div>'+
-      '<div class="meta">'+fmtDay(Date.parse(m.ko))+(m.venue?(' · '+esc(m.venue)):'')+'</div>'+
-      '<div class="ko"><b>'+fmtTime(Date.parse(m.ko))+'</b><small>Doha</small></div>'+
-      '<div class="acts">'+
-        '<button type="button" class="remind-btn" data-id="'+m.id+'">⏰ Remind me</button>'+
-        '<a class="gcal" target="_blank" rel="noopener" href="'+gcalURL(m)+'">Google Calendar ↗</a>'+
-      '</div>'+
+      '<div class="meta">'+fmtDay(s)+(m.venue?(' · '+esc(m.venue)):'')+'</div>'+
+      '<div class="ko"><b>'+fmtTime(s)+'</b><small>Doha</small></div>'+
+      acts+
     '</article>';
   }).join('');
   Array.prototype.forEach.call(grid.querySelectorAll('.remind-btn'), function(b){
@@ -1071,14 +993,15 @@ function renderMatches(){
       if(m) downloadICS((m.home+'-v-'+m.away).replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.ics', icsDoc([m]));
     };
   });
-  note.textContent='“Remind me” saves the match to Apple, Google or Outlook with a 1-hour alert. Knockout fixtures appear here once teams are confirmed.';
+  note.textContent='“Remind me” adds a calendar alert 1 hour before kickoff (Apple, Google or Outlook). Knockout fixtures appear here once teams are confirmed.';
 }
 
-addAll.onclick   = function(e){ e.preventDefault(); var list=myMatches(); if(list.length) downloadICS('my-world-cup-2026.ics', icsDoc(list)); };
+addAll.onclick   = function(e){ e.preventDefault(); var ahead=myMatches().filter(function(m){ return Date.parse(m.ko) > Date.now(); }); if(ahead.length) downloadICS('my-world-cup-2026.ics', icsDoc(ahead)); };
 clearBtn.onclick = function(){ sel = new Set(); saveSel(); renderPicker(); renderMatches(); };
 
 renderPicker();
 renderMatches();
+setInterval(renderMatches, 60000);                          // keep "Up next / Live now" fresh
 
 })();
 </script>
