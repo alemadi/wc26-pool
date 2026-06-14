@@ -1418,11 +1418,10 @@ function renderFilters(){
   const onRound=roundKeys.indexOf(state.filter)>=0;
   let html="";
   html+='<button class="chip '+(state.filter==="today"?"on":"")+'" onclick="setFilter(\'today\')">Today</button>';
-  if(doneCount)html+='<button class="chip '+(state.filter==="completed"?"on":"")+'" onclick="setFilter(\'completed\')">\u2713 Completed '+doneCount+'</button>';
-  html+='<button class="chip '+(state.filter==="all"?"on":"")+'" onclick="setFilter(\'all\')">All 104</button>';
-  html+='<span class="chip sep">|</span>';
+  html+='<button class="chip '+(state.filter==="qatar"?"on":"")+'" onclick="setFilter(\'qatar\')">'+flagTag("qa")+' Qatar</button>';
+  html+='<button class="chip '+(state.filter==="arab"?"on":"")+'" onclick="setFilter(\'arab\')">Arab Teams</button>';
   const grp=[["Group stage",["MD1","MD2","MD3"]],["Knockouts",["R32","R16","QF","SF","FINAL"]]];
-  let opts='<option value=""'+(onRound?"":" selected")+' disabled hidden>Round</option>';
+  let opts='<option value=""'+(onRound?"":" selected")+' disabled hidden>Rounds</option>';
   grp.forEach(g=>{
     const ks=g[1].filter(k=>roundKeys.indexOf(k)>=0);
     if(!ks.length)return;
@@ -1431,8 +1430,8 @@ function renderFilters(){
     opts+='</optgroup>';
   });
   html+='<span class="rounddd"><select class="chip ddsel'+(onRound?" on":"")+'" aria-label="Filter by round" onchange="if(this.value)setFilter(this.value)">'+opts+'</select><span class="ddcar">\u25be</span></span>';
-  html+='<button class="chip '+(state.filter==="qatar"?"on":"")+'" onclick="setFilter(\'qatar\')">'+flagTag("qa")+' Qatar</button>';
-  html+='<button class="chip '+(state.filter==="arab"?"on":"")+'" onclick="setFilter(\'arab\')">Arab nations</button>';
+  html+='<button class="chip '+(state.filter==="all"?"on":"")+'" onclick="setFilter(\'all\')">All 104</button>';
+  if(doneCount)html+='<button class="chip '+(state.filter==="completed"?"on":"")+'" onclick="setFilter(\'completed\')">\u2713 Completed '+doneCount+'</button>';
   host.innerHTML=html;
 }
 function setFilter(f){state.filter=f;renderFilters();renderMatches();}
@@ -1503,7 +1502,7 @@ function renderMatches(){
   const pte=document.getElementById("pred-total");if(pte)pte.textContent=tot;
   document.getElementById("pred-bar").style.width=(c/tot*100)+"%";
   const list=fixturesFor(state.filter);
-  const lblMap={qatar:"Qatar matches",arab:"Arab nations",today:"Today",completed:"Completed",all:"All rounds"};
+  const lblMap={qatar:"Qatar matches",arab:"Arab Teams",today:"Today",completed:"Completed",all:"All rounds"};
   document.getElementById("match-tag").textContent=(lblMap[state.filter]||RLABEL[state.filter])+" · "+list.length+" match"+(list.length===1?"":"es");
   const host=document.getElementById("match-list");
   if(!list.length){host.innerHTML='<div class="empty"><div class="ic">📅</div><b>No matches here</b><span>Nothing scheduled for this filter today — try another tab.</span></div>';return;}
